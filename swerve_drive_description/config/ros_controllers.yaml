@@ -1,0 +1,63 @@
+# controller_list:
+#   - name: "swerve_drive_controller"
+#     # action_ns: follow_joint_trajectory
+#     type: Float64
+#     default: true
+#     joints:
+#       - lf_swerve_joint
+#       - rf_swerve_joint
+#       - rr_swerve_joint
+#       - lr_swerve_joint
+#       - lf_wheel_joint
+#       - rf_wheel_joint
+#       - rr_wheel_joint
+#       - lr_wheel_joint
+
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 50
+
+# swerve_drive_controller:
+lf_swerve_joint_controller:
+  type: velocity_controllers/JointPositionController
+  joint: lf_swerve_joint
+  pid: {p: 5.0, i: 0.01, d: 0.1}
+rf_swerve_joint_controller:
+  type: velocity_controllers/JointPositionController
+  joint: rf_swerve_joint
+  pid: {p: 5.0, i: 0.01, d: 0.1}
+rr_swerve_joint_controller:
+  type: velocity_controllers/JointPositionController
+  joint: rr_swerve_joint
+  pid: {p: 5.0, i: 0.01, d: 0.1}
+lr_swerve_joint_controller:
+  type: velocity_controllers/JointPositionController
+  joint: lr_swerve_joint
+  pid: {p: 5.0, i: 0.01, d: 0.1}
+lf_wheel_joint_controller:
+  type: velocity_controllers/JointVelocityController
+  joint: lf_wheel_joint
+  pid: {p: 5.0, i: 0.01, d: 0.1}
+rf_wheel_joint_controller:
+  type: velocity_controllers/JointVelocityController
+  joint: rf_wheel_joint
+  pid: {p: 5.0, i: 0.01, d: 0.1}
+rr_wheel_joint_controller:
+  type: velocity_controllers/JointVelocityController
+  joint: rr_wheel_joint
+  pid: {p: 5.0, i: 0.01, d: 0.1}
+lr_wheel_joint_controller:
+  type: velocity_controllers/JointVelocityController
+  joint: lr_wheel_joint
+  pid: {p: 5.0, i: 0.01, d: 0.1}  
+
+gazebo_ros_control:
+  pid_gains:
+    lf_swerve_joint: {p: 1.0, i: 0.0, d: 0.0}
+    rf_swerve_joint: {p: 1.0, i: 0.0, d: 0.0}
+    rr_swerve_joint: {p: 1.0, i: 0.0, d: 0.0}
+    lr_swerve_joint: {p: 1.0, i: 0.0, d: 0.0}
+    lf_wheel_joint: {p: 1.0, i: 0.0, d: 0.0}
+    rf_wheel_joint: {p: 1.0, i: 0.0, d: 0.0}
+    rr_wheel_joint: {p: 1.0, i: 0.0, d: 0.0}
+    lr_wheel_joint: {p: 1.0, i: 0.0, d: 0.0}

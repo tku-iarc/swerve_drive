@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<robot name="swerve_drive" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <physics type='ode'>
+    <max_step_size>0.001</max_step_size>
+    <real_time_factor>0.1</real_time_factor>
+    <real_time_update_rate>1000</real_time_update_rate>
+    <gravity>0 0 -9.8</gravity>
+  </physics>
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace></robotNamespace>
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+      <legacyModeNS>true</legacyModeNS>
+    </plugin>
+  </gazebo>
+
+  <gazebo reference="base_link">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Gray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+</robot>

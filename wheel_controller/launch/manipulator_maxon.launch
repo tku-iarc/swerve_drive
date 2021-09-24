@@ -1,0 +1,13 @@
+<launch>
+  <arg name="control_mode" default="velocity"/>
+  <arg name="sample_rate" default="12"/>
+
+  <param name="robot_description" textfile="$(find blue_arm_description)/urdf/blue_arm.xacro" />
+  
+  <node name="wheel_controller" pkg="wheel_controller" type="wheel_controller_node" output="screen">
+    <param name="control_mode" value="$(arg control_mode)"/>
+    <param name="sample_rate"  value="$(arg sample_rate)"/>
+  </node>
+  <include file="$(find wheel_controller)/launch/ros_controllers.launch"/>
+
+</launch>

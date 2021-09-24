@@ -1,0 +1,24 @@
+<launch>
+  <arg name="gazebo_gui" default="true"/>
+  <arg name="paused" default="true"/>
+  <arg name="urdf_path" default="$(find swerve_drive_description)/urdf/swerve_drive.xacro"/>
+  <include
+    file="$(find gazebo_ros)/launch/empty_world.launch" >
+    <arg name="world_name" default="worlds/empty.world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="gui" value="$(arg gazebo_gui)"/>
+  </include>
+
+  <param name="robot_description" 
+    command="$(find xacro)/xacro '$(arg urdf_path)'" />
+
+  <node
+    name="urdf_spawner"
+    pkg="gazebo_ros"
+    type="spawn_model"
+    args="-urdf -model swerve_drive -param robot_description"
+    output="screen" />
+
+  <include file="$(find swerve_drive_description)/launch/ros_controllers.launch"/>
+
+</launch>
