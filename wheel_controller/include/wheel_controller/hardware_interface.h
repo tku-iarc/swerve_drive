@@ -14,11 +14,11 @@
 namespace hardware_interface
 {
   
-class BlueArmInterface : public hardware_interface::RobotHW
+class SwerveDriveInterface : public hardware_interface::RobotHW
 {
 public:
-  BlueArmInterface(ros::NodeHandle& nodeHandle, std::vector<JointData*>& joint_data, float sample_rate, std::string control_mode);
-  ~BlueArmInterface();
+  SwerveDriveInterface(ros::NodeHandle& nodeHandle, std::vector<JointData*>& joint_data, float sample_rate, std::string control_mode);
+  ~SwerveDriveInterface();
   bool readFake();
   bool readPosition();
   bool readAll();

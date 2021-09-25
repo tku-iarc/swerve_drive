@@ -12,18 +12,18 @@
 #include "wheel_controller/joint_data.h"
 
 
-#define DOF 7
+#define DOF 2
 
-enum ArmState {Idle, Busy, Error, Disable};
+enum WheelState {Idle, Busy, Error, Disable};
 
 class WheelController
 {
 private:
     void jointDataInit();
     /* data */
-    ArmState arm_state;
-    hardware_interface::BlueArmInterface* blue_arm_interface;
-    controller_manager::ControllerManager* blue_arm_cm;
+    WheelState wheel_state;
+    hardware_interface::SwerveDriveInterface* swerve_drive_interface;
+    controller_manager::ControllerManager* wheel_cm;
 
     ros::NodeHandle& nodeHandle_;
 

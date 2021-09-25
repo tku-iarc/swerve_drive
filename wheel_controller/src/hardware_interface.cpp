@@ -4,7 +4,7 @@
 namespace hardware_interface
 {
 
-BlueArmInterface::BlueArmInterface(ros::NodeHandle& nodeHandle, std::vector<JointData*>& joint_data, float sample_rate, std::string control_mode)
+SwerveDriveInterface::SwerveDriveInterface(ros::NodeHandle& nodeHandle, std::vector<JointData*>& joint_data, float sample_rate, std::string control_mode)
     :nodeHandle_(nodeHandle)
 { 
     this->control_mode = (control_mode.compare("position") == 0) ? 0 : 1;
@@ -28,14 +28,14 @@ BlueArmInterface::BlueArmInterface(ros::NodeHandle& nodeHandle, std::vector<Join
     }
 }
 
-BlueArmInterface::~BlueArmInterface()
+SwerveDriveInterface::~SwerveDriveInterface()
 {
     //if node is interrupted, close device
     epos_controller.closeDevice();
 }
 
 template <typename JointInterface>
-void BlueArmInterface::initJointInterface(JointInterface& jnt_interface)
+void SwerveDriveInterface::initJointInterface(JointInterface& jnt_interface)
 {
     for (int i=0; i < jd_ptr.size(); i++)
     {
@@ -62,14 +62,14 @@ void BlueArmInterface::initJointInterface(JointInterface& jnt_interface)
     registerInterface(&jnt_interface);
 }
 
-void BlueArmInterface::closeDevice()
+void SwerveDriveInterface::closeDevice()
 {
     epos_controller.closeDevice();
     std::cout<<"Device closed!!!!!!!!!!!!"<<std::endl;
     return;
 }
 
-void BlueArmInterface::checkCmdLimit(int cmd_indx)
+void SwerveDriveInterface::checkCmdLimit(int cmd_indx)
 {
     if(jd_ptr[cmd_indx]->velocity_cmd_ > jd_ptr[cmd_indx]->max_velocity_)
         jd_ptr[cmd_indx]->velocity_cmd_ = jd_ptr[cmd_indx]->max_velocity_;
@@ -80,7 +80,7 @@ void BlueArmInterface::checkCmdLimit(int cmd_indx)
     return;
 }
 
-bool BlueArmInterface::readFake()
+bool SwerveDriveInterface::readFake()
 {
     for (int i=0; i < jd_ptr.size(); i++)
     {
@@ -91,7 +91,7 @@ bool BlueArmInterface::readFake()
     return true;
 }
 
-bool BlueArmInterface::readPosition()
+bool SwerveDriveInterface::readPosition()
 {
     for (int i=0; i < jd_ptr.size(); i++)
     {
@@ -106,7 +106,7 @@ bool BlueArmInterface::readPosition()
     return true;
 }
 
-bool BlueArmInterface::readAll()
+bool SwerveDriveInterface::readAll()
 {
     for (int i=0; i < jd_ptr.size(); i++)
     {
@@ -119,7 +119,7 @@ bool BlueArmInterface::readAll()
     return true;
 }
 
-bool BlueArmInterface::writePosition(ros::Duration period)
+bool SwerveDriveInterface::writePosition(ros::Duration period)
 {
     if(epos_controller.deviceOpenedCheck() == false)
         return false;
@@ -138,7 +138,7 @@ bool BlueArmInterface::writePosition(ros::Duration period)
     return true;
 }
 
-bool BlueArmInterface::writeVelocity(ros::Duration period)
+bool SwerveDriveInterface::writeVelocity(ros::Duration period)
 {
     if(epos_controller.deviceOpenedCheck() == false)
         return false;

@@ -7,14 +7,14 @@
   <!-- start this controller -->
   <node name="controller_spawner" pkg="controller_manager" type="controller_manager" respawn="false" output="screen"
     args="spawn joint_state_controller
-                lf_swerve_joint_controller
-                rf_swerve_joint_controller
-                rr_swerve_joint_controller
-                lr_swerve_joint_controller
-                lf_wheel_joint_controller
-                rf_wheel_joint_controller
-                rr_wheel_joint_controller
-                lr_wheel_joint_controller"/>
+                lf_swerve_controller
+                rf_swerve_controller
+                rr_swerve_controller
+                lr_swerve_controller
+                lf_wheel_controller
+                rf_wheel_controller
+                rr_wheel_controller
+                lr_wheel_controller"/>
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 </launch>

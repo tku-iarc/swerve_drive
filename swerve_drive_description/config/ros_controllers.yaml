@@ -18,35 +18,35 @@ joint_state_controller:
   publish_rate: 50
 
 # swerve_drive_controller:
-lf_swerve_joint_controller:
+lf_swerve_controller:
   type: velocity_controllers/JointPositionController
   joint: lf_swerve_joint
   pid: {p: 5.0, i: 0.01, d: 0.1}
-rf_swerve_joint_controller:
-  type: velocity_controllers/JointPositionController
-  joint: rf_swerve_joint
-  pid: {p: 5.0, i: 0.01, d: 0.1}
-rr_swerve_joint_controller:
-  type: velocity_controllers/JointPositionController
-  joint: rr_swerve_joint
-  pid: {p: 5.0, i: 0.01, d: 0.1}
-lr_swerve_joint_controller:
-  type: velocity_controllers/JointPositionController
-  joint: lr_swerve_joint
-  pid: {p: 5.0, i: 0.01, d: 0.1}
-lf_wheel_joint_controller:
+lf_wheel_controller:
   type: velocity_controllers/JointVelocityController
   joint: lf_wheel_joint
   pid: {p: 5.0, i: 0.01, d: 0.1}
-rf_wheel_joint_controller:
+rf_swerve_controller:
+  type: velocity_controllers/JointPositionController
+  joint: rf_swerve_joint
+  pid: {p: 5.0, i: 0.01, d: 0.1}
+rf_wheel_controller:
   type: velocity_controllers/JointVelocityController
   joint: rf_wheel_joint
   pid: {p: 5.0, i: 0.01, d: 0.1}
-rr_wheel_joint_controller:
+rr_swerve_controller:
+  type: velocity_controllers/JointPositionController
+  joint: rr_swerve_joint
+  pid: {p: 5.0, i: 0.01, d: 0.1}
+rr_wheel_controller:
   type: velocity_controllers/JointVelocityController
   joint: rr_wheel_joint
   pid: {p: 5.0, i: 0.01, d: 0.1}
-lr_wheel_joint_controller:
+lr_swerve_controller:
+  type: velocity_controllers/JointPositionController
+  joint: lr_swerve_joint
+  pid: {p: 5.0, i: 0.01, d: 0.1}
+lr_wheel_controller:
   type: velocity_controllers/JointVelocityController
   joint: lr_wheel_joint
   pid: {p: 5.0, i: 0.01, d: 0.1}  
