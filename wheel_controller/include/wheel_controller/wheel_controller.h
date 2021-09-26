@@ -19,7 +19,7 @@ enum WheelState {Idle, Busy, Error, Disable};
 class WheelController
 {
 private:
-    void jointDataInit();
+    void jointDataInit(int swerve_id, int wheel_id);
     /* data */
     WheelState wheel_state;
     hardware_interface::SwerveDriveInterface* swerve_drive_interface;
@@ -30,7 +30,6 @@ private:
 public:
     WheelController(ros::NodeHandle& nodeHandle);
     ~WheelController();
-    void closeDevice();
     void process(ros::Rate& loop_rate);
     std::vector<JointData*> joint_data;
     float sample_rate;

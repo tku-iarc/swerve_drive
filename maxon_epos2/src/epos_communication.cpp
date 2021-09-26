@@ -8,7 +8,7 @@
 //		 		 Install EPOS2 Linux Library from Maxon first!
 //============================================================================
 
-#include "maxon_epos2/EposCommunication.hpp"
+#include "maxon_epos2/epos_communication.hpp"
 
 namespace maxon_epos2 {
 
@@ -71,7 +71,7 @@ void EposCommunication::PrintSettings()
 	SeparatorLine();
 }
 
-void EposCommunication::SetDefaultParameters(unsigned short *nodeIdList, int motors)
+void EposCommunication::SetDefaultParameters(std::vector<unsigned short> nodeIdList, int motors)
 {
 
 	/* Options:
@@ -660,7 +660,7 @@ int EposCommunication::GetVelocity(int* pVelocityIsCounts, unsigned int* p_pErro
 
 //public functions:
 
-int EposCommunication::initialization(unsigned short *nodeIdList, int motors){
+int EposCommunication::initialization(std::vector<unsigned short> nodeIdList, int motors){
 	int lResult = MMC_SUCCESS;
 	unsigned int ulErrorCode = 0;
 
@@ -809,9 +809,9 @@ int EposCommunication::setHomingParameter(unsigned short p_usNodeId, unsigned in
 	unsigned int homing_acceleration = 20;
 	unsigned int speed_switch = 50;
 	unsigned int speed_index = 50;
-	int home_offset = mmToCounts(0.5);
+	int home_offset = radsToCounts(0.5);
 	unsigned short current_threshold = 0;
-	int home_position = mmToCounts(0.5);
+	int home_position = radsToCounts(0.5);
 	HANDLE p_DeviceHandle = (p_usNodeId == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle;
 	if(VCS_SetHomingParameter(p_DeviceHandle, p_usNodeId, homing_acceleration, speed_switch, speed_index, home_offset, current_threshold, home_position, p_pErrorCode) == MMC_FAILED)
 	{
@@ -948,7 +948,7 @@ int EposCommunication::setPosition(unsigned short p_usNodeId, double position_se
 	{
 		bool absolute = true;
 
-		if(VCS_MoveToPosition(p_DeviceHandle, p_usNodeId, mmToCounts(position_setpoint), absolute, 1, &ulErrorCode) == MMC_FAILED)
+		if(VCS_MoveToPosition(p_DeviceHandle, p_usNodeId, radsToCounts(position_setpoint), absolute, 1, &ulErrorCode) == MMC_FAILED)
 		{
 			lResult = MMC_FAILED;
 			LogError("VCS_MoveToPosition", lResult, ulErrorCode, p_usNodeId);
@@ -960,16 +960,16 @@ int EposCommunication::setPosition(unsigned short p_usNodeId, double position_se
 	return lResult;
 }
 
-int EposCommunication::setPositionMust(unsigned short p_usNodeId, double position_setpoint)
+int EposCommunication::setPositionMust(unsigned short p_usNodeId, double& position_setpoint)
 {
 	int lResult = MMC_SUCCESS;
 	unsigned int ulErrorCode = 0;
 	HANDLE p_DeviceHandle = (p_usNodeId == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle;
 
-	if(VCS_SetPositionMust(p_DeviceHandle, p_usNodeId, mmToCounts(position_setpoint), &ulErrorCode) == MMC_FAILED)
+	if(VCS_SetPositionMust(p_DeviceHandle, p_usNodeId, radsToCounts(position_setpoint), &ulErrorCode) == MMC_FAILED)
 	{
 		LogError("VCS_SetPositionMust", lResult, ulErrorCode, p_usNodeId);
-		std::cout<<"position_setpoint: "<<position_setpoint<<", to counts: "<<mmToCounts(position_setpoint)<<std::endl;
+		std::cout<<"position_setpoint: "<<position_setpoint<<", to counts: "<<radsToCounts(position_setpoint)<<std::endl;
 		lResult = MMC_FAILED;
 	}
 	else{
@@ -979,7 +979,7 @@ int EposCommunication::setPositionMust(unsigned short p_usNodeId, double positio
 	return lResult;
 }
 
-int EposCommunication::setVelocityMust(unsigned short p_usNodeId, double velocity_setpoint)
+int EposCommunication::setVelocityMust(unsigned short p_usNodeId, double& velocity_setpoint)
 {
 	int lResult = MMC_SUCCESS;
 	unsigned int ulErrorCode = 0;
@@ -1018,7 +1018,7 @@ int EposCommunication::getPosition(unsigned short p_usNodeId, double* pPositionI
 		LogError("VCS_GetPositionIs", lResult, ulErrorCode, p_usNodeId);
 	}
 
-	*pPositionIs = countsTomm(&pPositionIsCounts);
+	*pPositionIs = countsToRads(pPositionIsCounts);
 
 	//only for Debugging
 	//ROS_INFO_STREAM("!!! pPositionIs: " << *pPositionIs << " pPositionIsCounts: " << pPositionIsCounts);
@@ -1042,7 +1042,7 @@ int EposCommunication::getVelocity(unsigned short p_usNodeId, double* pVelocityI
 		lResult = MMC_FAILED;
 		LogError("VCS_GetVelocityIs", lResult, ulErrorCode, p_usNodeId);
 	}
-	*pVelocityIs = rpmToRads(&pVelocityIsCounts);
+	*pVelocityIs = rpmToRads(pVelocityIsCounts);
 	return lResult;
 }
 
@@ -1059,28 +1059,28 @@ int EposCommunication::closeDevice(){
 	return lResult;
 }
 
-double EposCommunication::countsTomm(int* counts){
-	double mm = -1 * 2 * M_PI * (*counts) / 4096. / 100.;
+double EposCommunication::countsToRads(const int& counts){
+	double mm = -1 * 2 * M_PI * (counts) / 2048. / (103275.0/3211.0);
 	return mm;
 }
 
-int EposCommunication::mmToCounts(double mm){
-	int counts = -1 * mm  * 4096 * 100 / (2 * M_PI);
+int EposCommunication::radsToCounts(const double& mm){
+	int counts = -1 * mm  * 2048 * (103275.0/3211.0) / (2 * M_PI);
 	// ROS_INFO_STREAM("counts: " << counts);
 	return counts;
 }
 
-int EposCommunication::radsToRpm(double rads)
+int EposCommunication::radsToRpm(const double& rads)
 {
 	int rpm;
 	rpm = -1 * rads * 100 * 60 / (2 * M_PI);
 	return rpm;
 }
 
-double EposCommunication::rpmToRads(int* rpm)
+double EposCommunication::rpmToRads(const int& rpm)
 {
 	double rads;
-	rads = -1 * (*rpm) / 100. / 60. * (2 * M_PI);
+	rads = -1 * (rpm) / 100. / 60. * (2 * M_PI);
 	return rads;
 }
 

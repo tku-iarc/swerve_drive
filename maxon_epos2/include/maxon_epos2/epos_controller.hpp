@@ -14,7 +14,10 @@
 #include <string>
 #include <cmath>
 
-#include "maxon_epos2/EposCommunication.hpp"
+#include "maxon_epos2/epos_communication.hpp"
+#include "maxon_epos2/MotorCmds.h"
+#include "maxon_epos2/MotorState.h"
+#include "maxon_epos2/MotorStates.h"
 
 // ROS
 #include <ros/ros.h>
@@ -29,12 +32,12 @@ namespace maxon_epos2 {
 class EposController
 {
  public:
-  EposController();
+  // EposController();
   /*!
    * Constructor.
    * @param nodeHandle the ROS node handle.
    */
-  // EposController(ros::NodeHandle& nodeHandle);
+  EposController(ros::NodeHandle& nodeHandle);
 
   /*!
    * Destructor.
@@ -43,9 +46,13 @@ class EposController
   bool deviceOpenedCheck();
   bool read(int id, double& pos, double& vel, double& eff, double offset=0);
   bool readPosition(int id, double& pos, double offset);
+  bool readPosition(int id);
+  bool readVelocity(int id);
   bool writeProfilePosition(int id, double& cmd, double& vel, double offset=0);
   bool writePosition(int id, double& cmd, double offset);
   bool writeVelocity(int id, double& cmd);
+  bool writeVelocity(int id);
+  void motorStatesPublisher();
   void closeDevice();
 
  private:
@@ -56,12 +63,23 @@ class EposController
   // bool readParameters();
   //! Device object
   EposCommunication epos_device_;
+  void motorCmdsCallback(const maxon_epos2::MotorCmds::ConstPtr& msg);
+  ros::NodeHandle& nodeHandle_;
+
+  ros::Subscriber motor_cmds_sub_;
+  ros::Publisher  motor_states_pub_;
+
 
   //! Create variable for publishing motor info
   // maxon_epos2::epos_motor_info motor;
 
-  unsigned short id_list[7] = {1, 2, 3, 4, 5, 6, 7};
-  int motors = 7;
+  std::map<unsigned short, double> cmd;
+  std::map<unsigned short, double> pos;
+  std::map<unsigned short, double> vel;
+  std::map<unsigned short, double> cur;
+
+  std::vector<unsigned short> id_list_;
+  int motors;
 };
 
 } /* namespace */

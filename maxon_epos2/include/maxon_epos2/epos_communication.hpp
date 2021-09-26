@@ -27,8 +27,8 @@
 #ifndef EPOSCOMMUNICATION_H_
 #define EPOSCOMMUNICATION_H_
 // Include headers of Maxon EPOS library libCmdEpos.so:
-#include "maxon_epos2/Definitions.h"
-#include "maxon_epos2/WinTypes.h"
+#include "maxon_epos2/definitions.h"
+#include "maxon_epos2/win_types.h"
 
 #include <iostream>
 //STD
@@ -65,7 +65,7 @@ class EposCommunication
    */
   virtual ~EposCommunication();
 
-  int 	initialization(unsigned short *nodeIdList, int motors);
+  int 	initialization(std::vector<unsigned short> nodeIdList, int motors);
   bool 	deviceOpenedCheck();
   int 	homing();
   int 	startPositionMode();
@@ -76,8 +76,8 @@ class EposCommunication
 										       double profile_acceleration,
 										       double profile_deceleration);
   int 	setPosition(unsigned short p_usNodeI, double position_setpoint);
-  int   setPositionMust(unsigned short p_usNodeId, double position_setpoint);
-  int   setVelocityMust(unsigned short p_usNodeId, double velocity_setpoint);
+  int   setPositionMust(unsigned short p_usNodeId, double& position_setpoint);
+  int   setVelocityMust(unsigned short p_usNodeId, double& velocity_setpoint);
   int 	getPosition(unsigned short p_usNodeI, double* pPositionIs);
   int 	getVelocity(unsigned short p_usNodeI, double* pVelocityIs);
   int 	closeDevice();
@@ -110,7 +110,7 @@ class EposCommunication
   void  SeparatorLine();
   void  PrintHeader();
   void  PrintSettings();
-  void  SetDefaultParameters(unsigned short *nodeIdList , int motors);
+  void  SetDefaultParameters(std::vector<unsigned short> nodeIdList , int motors);
   int	  SetPositionProfile(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int* p_pErrorCode,
                            unsigned int profile_velocity,
 										       unsigned int profile_acceleration,
@@ -137,10 +137,10 @@ class EposCommunication
   int	  PrintAvailableProtocols();
   int	  GetPosition(int* pPositionIsCounts, unsigned int* p_pErrorCode);
   int	  GetVelocity(int* pVelocityIsCounts, unsigned int* p_pErrorCode);
-  double countsTomm(int* counts);
-  int 	mmToCounts(double mm);
-  int   radsToRpm(double rads);
-  double rpmToRads(int* rpm);
+  double countsToRads(const int& counts);
+  int 	radsToCounts(const double& mm);
+  int   radsToRpm(const double& rads);
+  double rpmToRads(const int& rpm);
 
 
 }; /* Class */

@@ -7,7 +7,8 @@
 #include <joint_limits_interface/joint_limits.h>
 #include <joint_limits_interface/joint_limits_urdf.h>
 #include <joint_limits_interface/joint_limits_rosparam.h>
-#include "maxon_epos2/EposController.hpp"
+#include "maxon_epos2/MotorCmds.h"
+#include "maxon_epos2/MotorStates.h"
 #include "wheel_controller/joint_data.h"
 
 
@@ -19,19 +20,15 @@ class SwerveDriveInterface : public hardware_interface::RobotHW
 public:
   SwerveDriveInterface(ros::NodeHandle& nodeHandle, std::vector<JointData*>& joint_data, float sample_rate, std::string control_mode);
   ~SwerveDriveInterface();
-  bool readFake();
-  bool readPosition();
-  bool readAll();
-  bool writePosition(ros::Duration period);
-  bool writeVelocity(ros::Duration period);
-  void closeDevice();
+  bool read();
+  void writeVelocity(ros::Duration period);
   float sample_rate;
 
 private:
   template <typename JointInterface>
   void initJointInterface(JointInterface& jnt_interface);
   void checkCmdLimit(int cmd_indx);
-  maxon_epos2::EposController epos_controller;
+  void motorStatesCallback(const maxon_epos2::MotorStates::ConstPtr& msg);
   hardware_interface::JointStateInterface jnt_state_interface;
   hardware_interface::PositionJointInterface jnt_pos_interface;
   hardware_interface::VelocityJointInterface jnt_vel_interface;
@@ -44,6 +41,9 @@ private:
   int control_mode;
   ros::NodeHandle& nodeHandle_;
 
+  ros::Publisher motor_cmds_pub_;
+  ros::Subscriber motor_states_sub_;
+  bool received_states;
 };
 
 } // namespace name

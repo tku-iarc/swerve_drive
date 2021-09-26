@@ -7,6 +7,8 @@
   <node name="wheel_controller" pkg="wheel_controller" type="wheel_controller_node" output="screen">
     <param name="control_mode" value="$(arg control_mode)"/>
     <param name="sample_rate"  value="$(arg sample_rate)"/>
+    <param name="swerve_id"    value="1"/>
+    <param name="swerve_id"    value="2"/>
   </node>
   <include file="$(find wheel_controller)/launch/ros_controllers.launch"/>
 

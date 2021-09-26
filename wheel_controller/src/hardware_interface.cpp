@@ -26,12 +26,13 @@ SwerveDriveInterface::SwerveDriveInterface(ros::NodeHandle& nodeHandle, std::vec
     {
         initJointInterface(jnt_vel_interface);
     }
+    motor_states_sub_ = nodeHandle_.subscribe("motor_states", 1, &SwerveDriveInterface::motorStatesCallback, this);
+	motor_cmds_pub_ = nodeHandle_.advertise<maxon_epos2::MotorCmds>("motor_cmds", 1);
+    received_states = false;
 }
 
 SwerveDriveInterface::~SwerveDriveInterface()
 {
-    //if node is interrupted, close device
-    epos_controller.closeDevice();
 }
 
 template <typename JointInterface>
@@ -62,13 +63,6 @@ void SwerveDriveInterface::initJointInterface(JointInterface& jnt_interface)
     registerInterface(&jnt_interface);
 }
 
-void SwerveDriveInterface::closeDevice()
-{
-    epos_controller.closeDevice();
-    std::cout<<"Device closed!!!!!!!!!!!!"<<std::endl;
-    return;
-}
-
 void SwerveDriveInterface::checkCmdLimit(int cmd_indx)
 {
     if(jd_ptr[cmd_indx]->velocity_cmd_ > jd_ptr[cmd_indx]->max_velocity_)
@@ -80,79 +74,45 @@ void SwerveDriveInterface::checkCmdLimit(int cmd_indx)
     return;
 }
 
-bool SwerveDriveInterface::readFake()
+bool SwerveDriveInterface::read()
 {
-    for (int i=0; i < jd_ptr.size(); i++)
+    if(received_states)
     {
-        jd_ptr[i]->joint_angle_ = jd_ptr[i]->angle_cmd_;
-        jd_ptr[i]->velocity_ = 0;
-        jd_ptr[i]->effort_ = 0;
+        received_states = false;
+        return true;
     }
-    return true;
+    return false;
 }
 
-bool SwerveDriveInterface::readPosition()
+void SwerveDriveInterface::writeVelocity(ros::Duration period)
 {
-    for (int i=0; i < jd_ptr.size(); i++)
-    {
-        jd_ptr[i]->velocity_ = jd_ptr[i]->velocity_cmd_;
-        jd_ptr[i]->effort_ = 0;
-        if(epos_controller.readPosition(jd_ptr[i]->id_, jd_ptr[i]->joint_angle_,  jd_ptr[i]->home_offset_) == false)
-        {
-            ROS_ERROR("Read Joint States Fail!!!");
-            return false;
-        }
-    }
-    return true;
-}
-
-bool SwerveDriveInterface::readAll()
-{
-    for (int i=0; i < jd_ptr.size(); i++)
-    {
-        if(epos_controller.read(jd_ptr[i]->id_, jd_ptr[i]->joint_angle_, jd_ptr[i]->velocity_, jd_ptr[i]->effort_,  jd_ptr[i]->home_offset_) == false)
-        {
-            ROS_ERROR("Read Joint States Fail!!!");
-            return false;
-        }
-    }
-    return true;
-}
-
-bool SwerveDriveInterface::writePosition(ros::Duration period)
-{
-    if(epos_controller.deviceOpenedCheck() == false)
-        return false;
-    jnt_pos_limits_interface.enforceLimits(period);
-    for (int i=0; i < jd_ptr.size(); i++)
-    {
-        float move_dis = fabs(jd_ptr[i]->angle_cmd_ - jd_ptr[i]->joint_angle_);
-        jd_ptr[i]->velocity_cmd_ = move_dis * sample_rate; // move_dis / (1 / sample_rate)
-        checkCmdLimit(i);
-        if(epos_controller.writePosition(jd_ptr[i]->id_, jd_ptr[i]->angle_cmd_, jd_ptr[i]->home_offset_) == false)
-        {
-            ROS_ERROR("Write Joint States Fail!!!");
-            return false;
-        }
-    }
-    return true;
-}
-
-bool SwerveDriveInterface::writeVelocity(ros::Duration period)
-{
-    if(epos_controller.deviceOpenedCheck() == false)
-        return false;
+    maxon_epos2::MotorCmds cmds;
     jnt_vel_limits_interface.enforceLimits(period);
     for (int i=0; i < jd_ptr.size(); i++)
     {
         checkCmdLimit(i);
-        if(epos_controller.writeVelocity(jd_ptr[i]->id_, jd_ptr[i]->velocity_cmd_) == false)
-        {
-            ROS_ERROR("Write Joint States Fail!!!");
-            return false;
-        }
+        cmds.motor_ids.push_back(jd_ptr[i]->id_);
+        cmds.cmd_values.push_back(jd_ptr[i]->velocity_cmd_);
     }
-    return true;
+        motor_cmds_pub_.publish(cmds);
+    return;
 }
 
+void SwerveDriveInterface::motorStatesCallback(const maxon_epos2::MotorStates::ConstPtr& msg)
+{
+    for(int i=0; i<msg->motor_states.size(); i++)
+    {
+        for(int j=0; j<jd_ptr.size(); j++)
+        {
+            if(msg->motor_states[i].motor_id == jd_ptr[j]->id_)
+            {
+                jd_ptr[j]->joint_angle_ = msg->motor_states[i].pos;
+                jd_ptr[j]->velocity_ = msg->motor_states[i].vel;
+                jd_ptr[j]->effort_ = 0;
+            }
+        }
+    }
+    received_states = true;
+    return;
+}
 }

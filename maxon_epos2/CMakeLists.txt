@@ -9,7 +9,7 @@ add_compile_options(-std=c++11)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  # message_generation
+  message_generation
   std_msgs
 )
 
@@ -47,10 +47,12 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   epos_motor_info.msg
-# )
+add_message_files(
+  FILES
+  MotorCmds.msg
+  MotorState.msg
+  MotorStates.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -66,10 +68,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs  # Or other packages containing msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -120,8 +122,8 @@ ${catkin_INCLUDE_DIRS}
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}_core
-  src/EposCommunication.cpp
-  src/EposController.cpp
+  src/epos_communication.cpp
+  src/epos_controller.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -132,7 +134,7 @@ add_dependencies(${PROJECT_NAME}_core ${catkin_EXPORTED_TARGETS})
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME} src/${PROJECT_NAME}_node.cpp src/EposController.cpp)
+add_executable(${PROJECT_NAME}_node src/epos_controller_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -142,17 +144,18 @@ add_dependencies(${PROJECT_NAME}_core ${catkin_EXPORTED_TARGETS})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_core ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_core
   ${catkin_LIBRARIES}
   EposCmd
 )
-# target_link_libraries(${PROJECT_NAME}
-#   ${PROJECT_NAME}_core
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(${PROJECT_NAME}_node
+  ${PROJECT_NAME}_core
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
