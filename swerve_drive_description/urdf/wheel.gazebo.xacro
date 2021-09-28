@@ -7,16 +7,16 @@
       <material>Gazebo/Black</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-    <gazebo reference="${side}_wheel_link">
+    <gazebo reference="${side}wheel_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/Blue</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-    <gazebo reference="${side}_swerve_joint">
+    <gazebo reference="${side}swerve_joint">
       <implicitSpringDamper>True</implicitSpringDamper>
     </gazebo>
-    <gazebo reference="${side}_wheel_joint">
+    <gazebo reference="${side}wheel_joint">
       <implicitSpringDamper>True</implicitSpringDamper>
     </gazebo>
   </xacro:macro>

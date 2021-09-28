@@ -67,10 +67,10 @@ void SwerveDriveInterface::checkCmdLimit(int cmd_indx)
 {
     if(jd_ptr[cmd_indx]->velocity_cmd_ > jd_ptr[cmd_indx]->max_velocity_)
         jd_ptr[cmd_indx]->velocity_cmd_ = jd_ptr[cmd_indx]->max_velocity_;
-    if(jd_ptr[cmd_indx]->angle_cmd_ > jd_ptr[cmd_indx]->max_angle_)
-        jd_ptr[cmd_indx]->angle_cmd_ = jd_ptr[cmd_indx]->max_angle_;
-    if(jd_ptr[cmd_indx]->angle_cmd_ < jd_ptr[cmd_indx]->min_angle_)
-        jd_ptr[cmd_indx]->angle_cmd_ = jd_ptr[cmd_indx]->min_angle_;
+    // if(jd_ptr[cmd_indx]->angle_cmd_ > jd_ptr[cmd_indx]->max_angle_)
+    //     jd_ptr[cmd_indx]->angle_cmd_ = jd_ptr[cmd_indx]->max_angle_;
+    // if(jd_ptr[cmd_indx]->angle_cmd_ < jd_ptr[cmd_indx]->min_angle_)
+    //     jd_ptr[cmd_indx]->angle_cmd_ = jd_ptr[cmd_indx]->min_angle_;
     return;
 }
 
@@ -92,7 +92,10 @@ void SwerveDriveInterface::writeVelocity(ros::Duration period)
     {
         checkCmdLimit(i);
         cmds.motor_ids.push_back(jd_ptr[i]->id_);
-        cmds.cmd_values.push_back(jd_ptr[i]->velocity_cmd_);
+        if(i == 0)
+            cmds.cmd_values.push_back(jd_ptr[i]->velocity_cmd_ / jd_ptr[i]->gear_ratio_);
+        else
+            cmds.cmd_values.push_back(jd_ptr[i]->velocity_cmd_ / jd_ptr[i]->gear_ratio_ - jd_ptr[0]->velocity_ * 0.714286);
     }
         motor_cmds_pub_.publish(cmds);
     return;
@@ -106,8 +109,11 @@ void SwerveDriveInterface::motorStatesCallback(const maxon_epos2::MotorStates::C
         {
             if(msg->motor_states[i].motor_id == jd_ptr[j]->id_)
             {
-                jd_ptr[j]->joint_angle_ = msg->motor_states[i].pos;
-                jd_ptr[j]->velocity_ = msg->motor_states[i].vel;
+                jd_ptr[j]->joint_angle_ = msg->motor_states[i].pos * jd_ptr[j]->gear_ratio_;
+                if(j == 0)
+                    jd_ptr[j]->velocity_ = jd_ptr[j]->velocity_cmd_;
+                else
+                    jd_ptr[j]->velocity_ = msg->motor_states[i].vel * jd_ptr[j]->gear_ratio_;
                 jd_ptr[j]->effort_ = 0;
             }
         }

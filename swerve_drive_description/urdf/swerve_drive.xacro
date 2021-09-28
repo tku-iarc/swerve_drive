@@ -51,19 +51,19 @@
     </collision>
   </link>
 
-  <xacro:swerve_wheel side="lf"  parent="base_link">
+  <xacro:swerve_wheel side="lf_"  parent="base_link">
     <origin xyz="0.24858 0.17929 0.096509" rpy="0 0 0" />
   </xacro:swerve_wheel>
 
-  <xacro:swerve_wheel side="rf"  parent="base_link">
+  <xacro:swerve_wheel side="rf_"  parent="base_link">
     <origin xyz="0.24858 -0.18071 0.096509" rpy="0 0 0" />
   </xacro:swerve_wheel>
 
-  <xacro:swerve_wheel side="rr"  parent="base_link">
+  <xacro:swerve_wheel side="rr_"  parent="base_link">
     <origin xyz="-0.28642 -0.18071 0.096509" rpy="0 0 0" />
   </xacro:swerve_wheel>
 
-  <xacro:swerve_wheel side="lr"  parent="base_link">
+  <xacro:swerve_wheel side="lr_"  parent="base_link">
     <origin xyz="-0.28642 0.17929 0.096509" rpy="0 0 0" />
   </xacro:swerve_wheel>
 

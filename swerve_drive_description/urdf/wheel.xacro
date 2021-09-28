@@ -4,7 +4,7 @@
   <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.transmission.xacro" />
   <xacro:macro name="swerve_wheel" params="side parent *origin">
     <link
-        name="${side}_swerve_link">
+        name="${side}swerve_link">
         <inertial>
         <origin
             xyz="-6.5343E-06 0.003953 -0.024575"
@@ -44,18 +44,18 @@
         </collision>
     </link>
     <joint
-        name="${side}_swerve_joint"
+        name="${side}swerve_joint"
         type="continuous">
         <xacro:insert_block name="origin" />
         <parent
         link="${parent}" />
         <child
-        link="${side}_swerve_link" />
+        link="${side}swerve_link" />
         <axis
         xyz="0 0 1" />
     </joint>
     <link
-        name="${side}_wheel_link">
+        name="${side}wheel_link">
         <inertial>
         <origin
             xyz="-1.1437E-05 -4.8244E-06 -7.4559E-06"
@@ -95,15 +95,15 @@
         </collision>
     </link>
     <joint
-        name="${side}_wheel_joint"
+        name="${side}wheel_joint"
         type="continuous">
         <origin
         xyz="0 0.00047482 -0.07"
         rpy="0 0 0" />
         <parent
-        link="${side}_swerve_link" />
+        link="${side}swerve_link" />
         <child
-        link="${side}_wheel_link" />
+        link="${side}wheel_link" />
         <axis
         xyz="0 -1 0" />
     </joint>

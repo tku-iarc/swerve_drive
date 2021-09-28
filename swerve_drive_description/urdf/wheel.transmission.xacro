@@ -5,22 +5,22 @@
   <xacro:macro name="wheel_transmission" params="side">
 
     <!-- all joint transmission -->
-    <transmission name="${side}_swerve_joint_trans">
+    <transmission name="${side}swerve_joint_trans">
         <type>transmission_interface/SimpleTransmission</type>
-        <joint name="${side}_swerve_joint">
+        <joint name="${side}swerve_joint">
             <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
         </joint>
-        <actuator name="${side}_swerve_joint_motor">
+        <actuator name="${side}swerve_joint_motor">
             <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
             <mechanicalReduction>1</mechanicalReduction>
         </actuator>
     </transmission>
-    <transmission name="${side}_wheel_joint_trans">
+    <transmission name="${side}wheel_joint_trans">
         <type>transmission_interface/SimpleTransmission</type>
-        <joint name="${side}_wheel_joint">
+        <joint name="${side}wheel_joint">
             <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
         </joint>
-        <actuator name="${side}_wheel_joint_motor">
+        <actuator name="${side}wheel_joint_motor">
             <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
             <mechanicalReduction>1</mechanicalReduction>
         </actuator>

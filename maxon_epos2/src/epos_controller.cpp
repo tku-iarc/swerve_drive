@@ -24,10 +24,10 @@ namespace maxon_epos2 {
 EposController::EposController(ros::NodeHandle& nodeHandle)
 	:nodeHandle_(nodeHandle)
 {
-	this->motors = id_list_.size();
  	std::vector<int> id_list;
 	nodeHandle.getParam("id_list", id_list);
-	for (auto it = id_list_.begin(); it != id_list_.end(); ++it)
+	this->motors = id_list.size();
+	for (auto it = id_list.begin(); it != id_list.end(); ++it)
 	{
 		this->id_list_.push_back(*it);
 		cmd.insert(std::pair<unsigned short, double>(*it, 0));
@@ -38,7 +38,9 @@ EposController::EposController(ros::NodeHandle& nodeHandle)
 	//Initialize device:
 	if((epos_device_.initialization(id_list_, motors))==MMC_FAILED) ROS_ERROR("Device initialization");
 	//Start position mode during homing callback function:
+
 	if((epos_device_.startVolicityMode())==MMC_FAILED) ROS_ERROR("Starting velocity mode failed");
+
 	motor_cmds_sub_ = nodeHandle_.subscribe("motor_cmds", 16, &EposController::motorCmdsCallback, this);
 	motor_states_pub_ = nodeHandle_.advertise<maxon_epos2::MotorStates>("motor_states", 1);
 }

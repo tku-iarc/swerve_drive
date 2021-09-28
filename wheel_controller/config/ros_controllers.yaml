@@ -5,7 +5,8 @@ joint_state_controller:
 swerve_controller:
   type: velocity_controllers/JointPositionController
   joint: swerve_joint
-  pid: {p: 5.0, i: 0.01, d: 0.1}
+  pid: {p: 1.0, i: 0, d: 0}
+  
 wheel_controller:
   type: velocity_controllers/JointVelocityController
   joint: wheel_joint
@@ -17,14 +18,18 @@ joint_limits:
     min_position: -3.1415926
     max_position: 3.1415926
     has_velocity_limits: true
-    max_velocity: 3.29
+    max_velocity: 3.2
     has_acceleration_limits: true
-    max_acceleration: 6.58
+    max_acceleration: 160
+    has_jerk_limits: true
+    max_jerk: 1000.0
+    has_effort_limits: true
+    max_effort: 1000
   wheel_joint:
     has_position_limits: true
-    min_position: 0.0
+    min_position: -3.1415926
     max_position: 3.1415926
     has_velocity_limits: true
-    max_velocity: 3.29
+    max_velocity: 15
     has_acceleration_limits: true
-    max_acceleration: 6.58
+    max_acceleration: 60

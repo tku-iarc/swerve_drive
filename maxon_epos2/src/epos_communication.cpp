@@ -1060,12 +1060,12 @@ int EposCommunication::closeDevice(){
 }
 
 double EposCommunication::countsToRads(const int& counts){
-	double mm = -1 * 2 * M_PI * (counts) / 2048. / (103275.0/3211.0);
+	double mm = 2 * M_PI * (counts) / 2048. / (103275.0/3211.0);
 	return mm;
 }
 
 int EposCommunication::radsToCounts(const double& mm){
-	int counts = -1 * mm  * 2048 * (103275.0/3211.0) / (2 * M_PI);
+	int counts = mm  * 2048 * (103275.0/3211.0) / (2 * M_PI);
 	// ROS_INFO_STREAM("counts: " << counts);
 	return counts;
 }
@@ -1073,14 +1073,14 @@ int EposCommunication::radsToCounts(const double& mm){
 int EposCommunication::radsToRpm(const double& rads)
 {
 	int rpm;
-	rpm = -1 * rads * 100 * 60 / (2 * M_PI);
+	rpm = rads * (103275.0/3211.0) * 60 / (2 * M_PI);
 	return rpm;
 }
 
 double EposCommunication::rpmToRads(const int& rpm)
 {
 	double rads;
-	rads = -1 * (rpm) / 100. / 60. * (2 * M_PI);
+	rads = (rpm) / (103275.0/3211.0) / 60. * (2 * M_PI);
 	return rads;
 }
 
