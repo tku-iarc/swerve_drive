@@ -24,8 +24,12 @@ namespace maxon_epos2 {
 EposController::EposController(ros::NodeHandle& nodeHandle)
 	:nodeHandle_(nodeHandle)
 {
- 	std::vector<int> id_list;
-	nodeHandle.getParam("id_list", id_list);
+	std::vector<int> id_list;
+    std::vector<int> pos_list;
+    std::vector<int> vel_list;
+    nodeHandle_.getParam("id_list", id_list);
+	nodeHandle_.getParam("pos_list", pos_list);
+    nodeHandle_.getParam("vel_list", vel_list);
 	this->motors = id_list.size();
 	for (auto it = id_list.begin(); it != id_list.end(); ++it)
 	{
@@ -39,7 +43,8 @@ EposController::EposController(ros::NodeHandle& nodeHandle)
 	if((epos_device_.initialization(id_list_, motors))==MMC_FAILED) ROS_ERROR("Device initialization");
 	//Start position mode during homing callback function:
 
-	if((epos_device_.startVolicityMode())==MMC_FAILED) ROS_ERROR("Starting velocity mode failed");
+	if((epos_device_.startPositionMode(pos_list))==MMC_FAILED) ROS_ERROR("Starting position mode failed");
+	if((epos_device_.startVolicityMode(vel_list))==MMC_FAILED) ROS_ERROR("Starting velocity mode failed");
 
 	motor_cmds_sub_ = nodeHandle_.subscribe("motor_cmds", 16, &EposController::motorCmdsCallback, this);
 	motor_states_pub_ = nodeHandle_.advertise<maxon_epos2::MotorStates>("motor_states", 1);
@@ -128,6 +133,16 @@ bool EposController::writePosition(int id, double& cmd, double offset)
 {
 	double goal_cmd = cmd - offset;
 	if(epos_device_.setPositionMust(id, goal_cmd)==MMC_FAILED)
+	{
+		ROS_ERROR("Seting position failed");
+		return false;
+	}
+	return true;
+}
+
+bool EposController::writePosition(int id)
+{
+	if(epos_device_.setPositionMust(id, cmd[id])==MMC_FAILED)
 	{
 		ROS_ERROR("Seting position failed");
 		return false;

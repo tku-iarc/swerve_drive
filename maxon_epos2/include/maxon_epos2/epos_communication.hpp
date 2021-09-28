@@ -68,8 +68,8 @@ class EposCommunication
   int 	initialization(std::vector<unsigned short> nodeIdList, int motors);
   bool 	deviceOpenedCheck();
   int 	homing();
-  int 	startPositionMode();
-  int   startVolicityMode();
+  int 	startPositionMode(std::vector<int> id_list);
+  int   startVolicityMode(std::vector<int> id_list);
   int   setHomingParameter(unsigned short p_usNodeId, unsigned int* p_pErrorCode);
   int   setPositionProfile(unsigned short p_usNodeId,
                            double profile_velocity,

@@ -35,10 +35,15 @@ int main(int argc, char** argv)
 		ros::spinOnce();
         if(epos_controller->deviceOpenedCheck() == false)
             continue;
+        for(auto it = pos_list.begin(); it != pos_list.end(); ++it)
+            epos_controller->writePosition(*it);
         for(auto it = id_list.begin(); it != id_list.end(); ++it)
             epos_controller->writeVelocity(*it);
         for(auto it = pos_list.begin(); it != pos_list.end(); ++it)
+        {
             epos_controller->readPosition(*it);
+            epos_controller->readVelocity(*it);
+        }
         for(auto it = vel_list.begin(); it != vel_list.end(); ++it)
             epos_controller->readVelocity(*it);
         epos_controller->motorStatesPublisher();

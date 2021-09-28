@@ -8,6 +8,7 @@ typedef struct
 {
 public:
     int id_;
+    int control_mode_;
     std::string joint_name_;
     double joint_angle_;
     double min_angle_;

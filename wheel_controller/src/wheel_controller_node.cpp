@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 
 	wheel_controller = new WheelController(nodeHandle);
 
-	std::cout<<"wheel_controller->sample_rate"<<std::endl;
+	// std::cout<<"wheel_controller->sample_rate"<<std::endl;
 	ros::Rate loop_rate(wheel_controller->sample_rate);
 	while (ros::ok()){
 		ros::Time start_time = ros::Time::now();
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 		wheel_controller->process(loop_rate);
 		loop_rate.sleep();
 		ros::Time end_time = ros::Time::now();
-		std::cout<<"loop time = "<<(end_time - start_time).toSec() * 1000 << " ms"<<std::endl;
+		// std::cout<<"loop time = "<<(end_time - start_time).toSec() * 1000 << " ms"<<std::endl;
 	}
 	spinner.stop();
 	return 0;

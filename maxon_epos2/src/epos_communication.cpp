@@ -747,7 +747,7 @@ int EposCommunication::initialization(std::vector<unsigned short> nodeIdList, in
 	unsigned int pMaxFollowingError;
 	unsigned int pMaxProfileVelocity;
 	unsigned int pMaxAcceleration;
-	unsigned int MaxAcceleration = 5000;
+	unsigned int MaxAcceleration = 10000;
 	if((lResult = VCS_GetMaxFollowingError(g_pKeyHandle, g_usNodeId, &pMaxFollowingError, &ulErrorCode))==MMC_FAILED)
 	{
 		LogError("VCS_GetMaxFollowingError", lResult, ulErrorCode);
@@ -852,48 +852,33 @@ int EposCommunication::homing()
 	return homing_success_status;
 }
 
-int EposCommunication::startPositionMode()
+int EposCommunication::startPositionMode(std::vector<int> id_list)
 {
 	int lResult = MMC_FAILED;
 	unsigned int ulErrorCode = 0;
 
-	//Start position mode:
-	// if((lResult = PositionMode(&ulErrorCode))==MMC_FAILED)
-	// {
-	// 	LogError("PositionMode", lResult, ulErrorCode);
-	// }
-	// else{
-	// 	ROS_INFO("PositionMode successfully started.");
-	// }
-
-	if((lResult = ActivatePositionMode(g_pKeyHandle, g_usNodeId, &ulErrorCode))==MMC_FAILED)
+	for (std::vector<int>::iterator it = id_list.begin() ; it != id_list.end(); ++it)
 	{
-		LogError("PositionMode", lResult, ulErrorCode);
-	}
-	for(int i = 1; i < g_motors; i++)
-	{
-		if((lResult = ActivatePositionMode(g_pSubKeyHandle, g_nodeIdList[i], &ulErrorCode))==MMC_FAILED)
+		HANDLE p_DeviceHandle = (*it == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle;
+		if((lResult = ActivatePositionMode(p_DeviceHandle, *it, &ulErrorCode))==MMC_FAILED)
 		{
-			LogError("PositionSubMode", lResult, ulErrorCode, g_nodeIdList[i]);
+			LogError("ActivatePositionMode", lResult, ulErrorCode, *it);
 		}
 	}
 	return lResult;
 }
 
-int EposCommunication::startVolicityMode()
+int EposCommunication::startVolicityMode(std::vector<int> id_list)
 {
 	int lResult = MMC_FAILED;
 	unsigned int ulErrorCode = 0;
 
-	if((lResult = ActivateVelocityMode(g_pKeyHandle, g_usNodeId, &ulErrorCode))==MMC_FAILED)
+	for (std::vector<int>::iterator it = id_list.begin() ; it != id_list.end(); ++it)
 	{
-		LogError("ActivateVelocityMode", lResult, ulErrorCode);
-	}
-	for(int i = 1; i < g_motors; i++)
-	{
-		if((lResult = ActivateVelocityMode(g_pSubKeyHandle, g_nodeIdList[i], &ulErrorCode))==MMC_FAILED)
+		HANDLE p_DeviceHandle = (*it == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle;
+		if((lResult = ActivateVelocityMode(p_DeviceHandle, *it, &ulErrorCode))==MMC_FAILED)
 		{
-			LogError("ActivateVelocityMode Sub", lResult, ulErrorCode, g_nodeIdList[i]);
+			LogError("ActivateVelocityMode Sub", lResult, ulErrorCode, *it);
 		}
 	}
 	return lResult;
@@ -903,17 +888,6 @@ int EposCommunication::setPositionProfile(unsigned short p_usNodeId, double prof
 										  double profile_acceleration = 1000,
 										  double profile_deceleration = 1000)
 {
-	// int lResult = MMC_FAILED;
-	// unsigned int ulErrorCode = 0;
-	// if((lResult = SetPositionProfile(g_pKeyHandle, g_usNodeId, &ulErrorCode))==MMC_FAILED)
-	// {
-	// 	LogError("SetPositionProfile", lResult, ulErrorCode);
-	// }
-
-	// if((lResult = SetPositionProfile(g_pSubKeyHandle, g_usSubNodeId, &ulErrorCode))==MMC_FAILED)
-	// {
-	// 	LogError("SetSubPositionProfile", lResult, ulErrorCode);
-	// }
 	unsigned int ulErrorCode = 0;
 	int lResult = MMC_SUCCESS;
 	HANDLE p_DeviceHandle = (p_usNodeId == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle;

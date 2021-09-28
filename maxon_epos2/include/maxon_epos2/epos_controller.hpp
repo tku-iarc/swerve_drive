@@ -50,6 +50,7 @@ class EposController
   bool readVelocity(int id);
   bool writeProfilePosition(int id, double& cmd, double& vel, double offset=0);
   bool writePosition(int id, double& cmd, double offset);
+  bool writePosition(int id);
   bool writeVelocity(int id, double& cmd);
   bool writeVelocity(int id);
   void motorStatesPublisher();

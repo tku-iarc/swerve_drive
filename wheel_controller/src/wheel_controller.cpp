@@ -25,6 +25,7 @@ void WheelController::jointDataInit(int swerve_id, int wheel_id)
 {
     joint_data.push_back(new JointData());
     joint_data[0]->id_           = swerve_id;
+    joint_data[0]->control_mode_ = 0;
     joint_data[0]->joint_name_   = "swerve_joint";
     joint_data[0]->joint_angle_  = 0;
     joint_data[0]->min_angle_    = -1 * DBL_MAX;
@@ -41,6 +42,7 @@ void WheelController::jointDataInit(int swerve_id, int wheel_id)
 
     joint_data.push_back(new JointData());
     joint_data[1]->id_           = wheel_id;
+    joint_data[0]->control_mode_ = 1;
     joint_data[1]->joint_name_   = "wheel_joint";
     joint_data[1]->joint_angle_  = 0;
     joint_data[1]->min_angle_    = -1 * DBL_MAX;
@@ -59,13 +61,11 @@ void WheelController::jointDataInit(int swerve_id, int wheel_id)
 void WheelController::process(ros::Rate& loop_rate)
 {
     ros::Time start_time = ros::Time::now();
-    ros::Duration timeout(2.0); // Timeout of 2 seconds
+    ros::Duration timeout(1.0); // Timeout of 2 seconds
     ros::Rate rate(100);
     while(swerve_drive_interface->read() == false)
     {
-        ROS_INFO("in the while");
         ros::spinOnce();
-        ROS_INFO("done_spin");
         if(ros::Time::now() - start_time > timeout)
         {
             ROS_ERROR("Wait for state update timeout!!");
@@ -73,7 +73,6 @@ void WheelController::process(ros::Rate& loop_rate)
         }
         rate.sleep();
     }
-    std::cout<<"loop_rate.expectedCycleTime() = "<<loop_rate.expectedCycleTime().toSec()*1000<<" ms"<<std::endl;
     wheel_cm->update(ros::Time::now(), loop_rate.expectedCycleTime());
     swerve_drive_interface->writeVelocity(loop_rate.expectedCycleTime());
     return;
