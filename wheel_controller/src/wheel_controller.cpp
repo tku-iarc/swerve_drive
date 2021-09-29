@@ -47,7 +47,7 @@ void WheelController::jointDataInit(int swerve_id, int wheel_id)
     joint_data[1]->joint_angle_  = 0;
     joint_data[1]->min_angle_    = -1 * DBL_MAX;
     joint_data[1]->max_angle_    = DBL_MAX;
-    joint_data[1]->max_velocity_ = 2.67 * 2 * M_PI * 0.9;
+    joint_data[1]->max_velocity_ = (2.67 - 0.42)* 2 * M_PI * 0.9;
     joint_data[1]->velocity_     = 0;
     joint_data[1]->acceleration_ = 0;
     joint_data[1]->deceleration_ = 0;

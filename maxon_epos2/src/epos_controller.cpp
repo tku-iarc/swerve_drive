@@ -113,7 +113,7 @@ bool EposController::writeVelocity(int id, double& cmd)
 {
 	if(epos_device_.setVelocityMust(id, cmd)==MMC_FAILED)
 	{
-		ROS_ERROR("Seting position failed");
+		ROS_ERROR("Seting velocity failed");
 		return false;
 	}
 	return true;
@@ -123,7 +123,7 @@ bool EposController::writeVelocity(int id)
 {
 	if(epos_device_.setVelocityMust(id, cmd[id])==MMC_FAILED)
 	{
-		ROS_ERROR("Seting position failed");
+		ROS_ERROR("Seting velocity failed");
 		return false;
 	}
 	return true;

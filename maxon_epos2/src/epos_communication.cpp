@@ -7,7 +7,6 @@
 // Description : Class providing the communication functions for Maxon EPOS2.
 //		 		 Install EPOS2 Linux Library from Maxon first!
 //============================================================================
-
 #include "maxon_epos2/epos_communication.hpp"
 
 namespace maxon_epos2 {
@@ -744,9 +743,6 @@ int EposCommunication::initialization(std::vector<unsigned short> nodeIdList, in
 		}
 	}
 
-	unsigned int pMaxFollowingError;
-	unsigned int pMaxProfileVelocity;
-	unsigned int pMaxAcceleration;
 	unsigned int MaxAcceleration = 10000;
 	if((lResult = VCS_GetMaxFollowingError(g_pKeyHandle, g_usNodeId, &pMaxFollowingError, &ulErrorCode))==MMC_FAILED)
 	{
@@ -957,8 +953,8 @@ int EposCommunication::setVelocityMust(unsigned short p_usNodeId, double& veloci
 {
 	int lResult = MMC_SUCCESS;
 	unsigned int ulErrorCode = 0;
-	HANDLE p_DeviceHandle = (p_usNodeId == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle;
-
+	HANDLE p_DeviceHandle = (p_usNodeId == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle; 
+	long velocity_cmd = (fabs(radsToRpm(velocity_setpoint)) > pMaxProfileVelocity) ? ((velocity_setpoint > 0) - (velocity_setpoint < 0)) * pMaxProfileVelocity : radsToRpm(velocity_setpoint);
 	if(VCS_SetVelocityMust(p_DeviceHandle, p_usNodeId, radsToRpm(velocity_setpoint), &ulErrorCode) == MMC_FAILED)
 	{
 		LogError("VCS_SetVelocityMust", lResult, ulErrorCode, p_usNodeId);

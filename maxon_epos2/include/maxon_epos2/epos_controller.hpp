@@ -55,6 +55,10 @@ class EposController
   bool writeVelocity(int id);
   void motorStatesPublisher();
   void closeDevice();
+  double getCmd(unsigned short id){return cmd[id];}
+  double getPos(unsigned short id){return pos[id];}
+  double getVel(unsigned short id){return vel[id];}
+  double getCur(unsigned short id){return cur[id];}
 
  private:
   /*!

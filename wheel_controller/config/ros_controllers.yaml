@@ -26,6 +26,6 @@ joint_limits:
     min_position: -3.1415926
     max_position: 3.1415926
     has_velocity_limits: true
-    max_velocity: 15
+    max_velocity: 12.7
     has_acceleration_limits: true
     max_acceleration: 30

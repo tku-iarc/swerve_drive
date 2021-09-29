@@ -32,49 +32,6 @@ SwerveDriveInterface::~SwerveDriveInterface()
 template <typename JointInterface>
 void SwerveDriveInterface::initJointInterface(JointInterface& jnt_interface)
 {
-    // for (int i=0; i < jd_ptr.size(); i++)
-    // {
-    //     double* cmd = new double;
-    //     if(jd_ptr[i]->control_mode_ == 0)
-    //     {
-    //         cmd = &jd_ptr[i]->angle_cmd_;
-    //         hardware_interface::JointHandle joint_handle(jnt_state_interface.getHandle(jd_ptr[i]->joint_name_), cmd);
-    //         jnt_pos_interface.registerHandle(joint_handle);
-    //         joint_limits_interface::JointLimits limits;
-    //         const bool rosparam_limits_ok = getJointLimits(jd_ptr[i]->joint_name_, nodeHandle_, limits);
-    //         joint_limits_interface::PositionJointSaturationHandle limit_handle(joint_handle, limits);
-    //         jnt_pos_limits_interface.registerHandle(limit_handle);
-    //         std::cout<<"jnt_pos_interface.registerHandle"<<std::endl;
-    //     }
-    //     else
-    //     {
-    //         cmd = &jd_ptr[i]->velocity_cmd_;
-    //         hardware_interface::JointHandle joint_handle(jnt_state_interface.getHandle(jd_ptr[i]->joint_name_), cmd);
-    //         jnt_vel_interface.registerHandle(joint_handle);
-    //         joint_limits_interface::JointLimits limits;
-    //         const bool rosparam_limits_ok = getJointLimits(jd_ptr[i]->joint_name_, nodeHandle_, limits);
-    //         joint_limits_interface::VelocityJointSaturationHandle limit_handle(joint_handle, limits);
-    //         jnt_vel_limits_interface.registerHandle(limit_handle);
-    //         std::cout<<"jnt_vel_interface.registerHandle"<<std::endl;
-    //     }
-    //     // jnt_interface.registerHandle(joint_handle);
-    //     // if(jd_ptr[i]->control_mode_ == 0)
-    //     //     jnt_pos_interface.registerHandle(joint_handle);
-    //     // else
-    //     //     jnt_vel_interface.registerHandle(joint_handle);
-    //     // joint_limits_interface::JointLimits limits;
-    //     // const bool rosparam_limits_ok = getJointLimits(jd_ptr[i]->joint_name_, nodeHandle_, limits);
-    //     // if(jd_ptr[i]->control_mode_ == 0)
-    //     // {
-    //     //     joint_limits_interface::PositionJointSaturationHandle limit_handle(joint_handle, limits);
-    //     //     jnt_pos_limits_interface.registerHandle(limit_handle);
-    //     // }
-    //     // else
-    //     // {
-    //     //     joint_limits_interface::VelocityJointSaturationHandle limit_handle(joint_handle, limits);
-    //     //     jnt_vel_limits_interface.registerHandle(limit_handle);
-    //     // }
-    // }
     double* cmd = new double;
     cmd = &jd_ptr[0]->angle_cmd_;
     hardware_interface::JointHandle joint_1_handle(jnt_state_interface.getHandle(jd_ptr[0]->joint_name_), cmd);
@@ -83,7 +40,6 @@ void SwerveDriveInterface::initJointInterface(JointInterface& jnt_interface)
     const bool rosparam_limits_ok_1 = getJointLimits(jd_ptr[0]->joint_name_, nodeHandle_, limits_1);
     joint_limits_interface::PositionJointSaturationHandle limit_1_handle(joint_1_handle, limits_1);
     jnt_pos_limits_interface.registerHandle(limit_1_handle);
-    std::cout<<"jnt_pos_interface.registerHandle "<<rosparam_limits_ok_1<<std::endl;
     registerInterface(&jnt_pos_interface);
 
     cmd = new double;
@@ -95,19 +51,12 @@ void SwerveDriveInterface::initJointInterface(JointInterface& jnt_interface)
     joint_limits_interface::VelocityJointSaturationHandle limit_2_handle(joint_2_handle, limits_2);
     jnt_vel_limits_interface.registerHandle(limit_2_handle);
     registerInterface(&jnt_vel_interface);
-    std::cout<<"jnt_vel_interface.registerHandle "<<rosparam_limits_ok_2<<std::endl;
-
-
 }
 
 void SwerveDriveInterface::checkCmdLimit(int cmd_indx)
 {
     if(jd_ptr[cmd_indx]->velocity_cmd_ > jd_ptr[cmd_indx]->max_velocity_)
         jd_ptr[cmd_indx]->velocity_cmd_ = jd_ptr[cmd_indx]->max_velocity_;
-    // if(jd_ptr[cmd_indx]->angle_cmd_ > jd_ptr[cmd_indx]->max_angle_)
-    //     jd_ptr[cmd_indx]->angle_cmd_ = jd_ptr[cmd_indx]->max_angle_;
-    // if(jd_ptr[cmd_indx]->angle_cmd_ < jd_ptr[cmd_indx]->min_angle_)
-    //     jd_ptr[cmd_indx]->angle_cmd_ = jd_ptr[cmd_indx]->min_angle_;
     return;
 }
 
@@ -132,7 +81,7 @@ void SwerveDriveInterface::writeVelocity(ros::Duration period)
         if(i == 0)
             cmds.cmd_values.push_back(jd_ptr[i]->angle_cmd_ / jd_ptr[i]->gear_ratio_);
         else
-            cmds.cmd_values.push_back(jd_ptr[i]->velocity_cmd_ / jd_ptr[i]->gear_ratio_ - jd_ptr[0]->velocity_ * 0.714286);
+            cmds.cmd_values.push_back(jd_ptr[i]->velocity_cmd_ / jd_ptr[i]->gear_ratio_);
     }
         motor_cmds_pub_.publish(cmds);
     return;

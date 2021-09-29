@@ -95,6 +95,9 @@ class EposCommunication
   unsigned short g_usNodeId;
   unsigned short g_usSubNodeId;
   unsigned short *g_nodeIdList;
+  unsigned int pMaxFollowingError;
+	unsigned int pMaxProfileVelocity;
+	unsigned int pMaxAcceleration;
   int g_baudrate;
   int g_motors;
   std::string g_deviceName;
