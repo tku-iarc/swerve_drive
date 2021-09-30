@@ -65,12 +65,13 @@ class EposCommunication
    */
   virtual ~EposCommunication();
 
-  int 	initialization(std::vector<unsigned short> nodeIdList, int motors);
+  int 	initialization(std::vector<int> nodeIdList, int motors);
   bool 	deviceOpenedCheck();
-  int 	homing();
+  int 	homing(unsigned short p_usNodeId, bool refind=false);
+  int   homingSuccess(unsigned short p_usNodeId);
   int 	startPositionMode(std::vector<int> id_list);
   int   startVolicityMode(std::vector<int> id_list);
-  int   setHomingParameter(unsigned short p_usNodeId, unsigned int* p_pErrorCode);
+  int   setHomingParameter(unsigned short p_usNodeId, unsigned int p_Velocity);
   int   setPositionProfile(unsigned short p_usNodeId,
                            double profile_velocity,
 										       double profile_acceleration,
@@ -113,7 +114,7 @@ class EposCommunication
   void  SeparatorLine();
   void  PrintHeader();
   void  PrintSettings();
-  void  SetDefaultParameters(std::vector<unsigned short> nodeIdList , int motors);
+  void  SetDefaultParameters(std::vector<int> nodeIdList , int motors);
   int	  SetPositionProfile(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int* p_pErrorCode,
                            unsigned int profile_velocity,
 										       unsigned int profile_acceleration,
@@ -126,13 +127,13 @@ class EposCommunication
   int   CloseDevice(unsigned int* p_pErrorCode);
   int   PrepareEpos(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int* p_pErrorCode);
   // int	  PositionMode(unsigned int* p_pErrorCode);
-  int 	HomingMode(unsigned int* p_pErrorCode);
+  int 	HomingMode(unsigned short p_usNodeId, unsigned int* p_pErrorCode);
   int	  ActivateProfilePositionMode(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int* p_pErrorCode);
   int   ActivatePositionMode(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int* p_pErrorCode);
   int   ActivateVelocityMode(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int* p_pErrorCode);
   int 	ActivateHomingMode(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int* p_pErrorCode);
-  int 	FindHome(unsigned int* p_pErrorCode);
-  int 	HomingSuccess(bool* homing_success, unsigned int* p_pErrorCode);
+  int 	FindHome(unsigned short p_usNodeId, signed char homing_method, unsigned int* p_pErrorCode);
+  int 	HomingSuccess(unsigned short p_usNodeId, unsigned int* p_pErrorCode);
   int	  SetPosition(HANDLE p_DeviceHandle, unsigned short p_usNodeId, long position_setpoint, unsigned int* p_pErrorCode);
   int	  PrintAvailablePorts(char* p_pInterfaceNameSel);
   int   PrintAvailableInterfaces();

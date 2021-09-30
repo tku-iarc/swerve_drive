@@ -20,8 +20,8 @@ SwerveDriveInterface::SwerveDriveInterface(ros::NodeHandle& nodeHandle, std::vec
     
     initJointInterface(jnt_pos_interface);
     // initJointInterface(jnt_vel_interface);
-    motor_states_sub_ = nodeHandle_.subscribe("motor_states", 1, &SwerveDriveInterface::motorStatesCallback, this);
-	motor_cmds_pub_ = nodeHandle_.advertise<maxon_epos2::MotorCmds>("motor_cmds", 1);
+    motor_states_sub_ = nodeHandle_.subscribe("/motor_states", 1, &SwerveDriveInterface::motorStatesCallback, this);
+	motor_cmds_pub_ = nodeHandle_.advertise<maxon_epos2::MotorCmds>("/motor_cmds", 1);
     received_states = false;
 }
 

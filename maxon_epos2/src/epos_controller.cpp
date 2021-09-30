@@ -40,12 +40,39 @@ EposController::EposController(ros::NodeHandle& nodeHandle)
 		cur.insert(std::pair<unsigned short, double>(*it, 0));
 	}
 	//Initialize device:
-	if((epos_device_.initialization(id_list_, motors))==MMC_FAILED) ROS_ERROR("Device initialization");
-	//Start position mode during homing callback function:
-
-	if((epos_device_.startPositionMode(pos_list))==MMC_FAILED) ROS_ERROR("Starting position mode failed");
+	if((epos_device_.initialization(id_list, motors))==MMC_FAILED) ROS_ERROR("Device initialization");
 	if((epos_device_.startVolicityMode(vel_list))==MMC_FAILED) ROS_ERROR("Starting velocity mode failed");
+	 
+	for(auto it = pos_list.begin(); it != pos_list.end(); ++it)
+	{
+		if((epos_device_.setHomingParameter(*it, 3000))==MMC_FAILED) ROS_ERROR("setHomingParameter Error");
+		if((epos_device_.homing(*it, false))==MMC_FAILED) ROS_ERROR("Homing Error");
+	}
+	bool homing_done = false;
+	while(!homing_done)
+	{
+		homing_done = true;
+		for(int i=0; i<pos_list.size(); i++)
+		{
+			readVelocity(pos_list[i]);
+			double cmd = -1 * vel[pos_list[i]] * 0.1566416;
+			writeVelocity(vel_list[i], cmd);
+			homing_done = homing_done && (epos_device_.homingSuccess(pos_list[i]) == MMC_SUCCESS);
+		}
+	}
 
+	//Start position mode during homing callback function:
+	if((epos_device_.startPositionMode(pos_list))==MMC_FAILED) ROS_ERROR("Starting position mode failed");	
+	for(auto it = pos_list.begin(); it != pos_list.end(); ++it)
+	{
+		readPosition(*it);
+		setMotorCmd(*it, pos[*it]);
+	}
+	for(auto it = vel_list.begin(); it != vel_list.end(); ++it)
+	{
+		readVelocity(*it);
+		setMotorCmd(*it, vel[*it]);
+	}
 	motor_cmds_sub_ = nodeHandle_.subscribe("motor_cmds", 16, &EposController::motorCmdsCallback, this);
 	motor_states_pub_ = nodeHandle_.advertise<maxon_epos2::MotorStates>("motor_states", 1);
 }
@@ -163,6 +190,11 @@ bool EposController::writeProfilePosition(int id, double& cmd, double& vel, doub
 		ROS_ERROR("Seting position failed");
 		return false;
 	}
+}
+
+void EposController::setMotorCmd(int id, double& cmd)
+{
+	this->cmd[id] = cmd;
 }
 
 void EposController::motorCmdsCallback(const maxon_epos2::MotorCmds::ConstPtr& msg)

@@ -10,6 +10,7 @@ void sigintHandler(int sig)
   epos_controller->closeDevice();
   delete epos_controller;
   // All the default sigint handler does is call shutdown()
+  ROS_INFO("maxon_epos2 shut down");
   ros::shutdown();
 }
 

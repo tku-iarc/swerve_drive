@@ -53,6 +53,7 @@ class EposController
   bool writePosition(int id);
   bool writeVelocity(int id, double& cmd);
   bool writeVelocity(int id);
+  void setMotorCmd(int id, double& cmd);
   void motorStatesPublisher();
   void closeDevice();
   double getCmd(unsigned short id){return cmd[id];}

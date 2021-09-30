@@ -1,0 +1,27 @@
+<launch>
+    <group ns="lf_wheel">
+        <include file="$(find wheel_controller)/launch/wheel_control.launch">
+            <arg name="swerve_id"    value="1"/>
+            <arg name="wheel_id"     value="2"/>
+        </include>
+    </group>
+    <group ns="rf_wheel">
+        <include file="$(find wheel_controller)/launch/wheel_control.launch">
+            <arg name="swerve_id"    value="3"/>
+            <arg name="wheel_id"     value="4"/>
+        </include>
+    </group>
+    <group ns="rr_wheel">
+        <include file="$(find wheel_controller)/launch/wheel_control.launch">
+            <arg name="swerve_id"    value="5"/>
+            <arg name="wheel_id"     value="6"/>
+        </include>
+    </group>
+    <group ns="lr_wheel">
+        <include file="$(find wheel_controller)/launch/wheel_control.launch">
+            <arg name="swerve_id"    value="7"/>
+            <arg name="wheel_id"     value="8"/>
+        </include>
+    </group>
+    
+</launch>

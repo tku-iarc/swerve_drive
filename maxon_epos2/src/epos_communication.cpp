@@ -70,7 +70,7 @@ void EposCommunication::PrintSettings()
 	SeparatorLine();
 }
 
-void EposCommunication::SetDefaultParameters(std::vector<unsigned short> nodeIdList, int motors)
+void EposCommunication::SetDefaultParameters(std::vector<int> nodeIdList, int motors)
 {
 
 	/* Options:
@@ -263,33 +263,26 @@ int EposCommunication::OpenSubDevice(unsigned int* p_pErrorCode)
 
 int EposCommunication::CloseDevice(unsigned int* p_pErrorCode)
 {
-	int lResult = MMC_FAILED;
+	int lResult = MMC_SUCCESS;
 
 	*p_pErrorCode = 0;
 
-	if(VCS_SetDisableState(g_pKeyHandle, g_usNodeId, p_pErrorCode) == MMC_FAILED)
+	if(VCS_CloseAllSubDevices(g_pSubKeyHandle, p_pErrorCode) == MMC_FAILED)
 	{
 		lResult = MMC_FAILED;
+		LogError("VCS_CloseAllSubDevices FAILED", lResult, *p_pErrorCode);
 	}
 
-	for(int i = 1; i < g_motors; i++)
+	if(VCS_CloseDevice(g_pKeyHandle, p_pErrorCode) == MMC_FAILED)
 	{
-		if(VCS_SetDisableState(g_pSubKeyHandle, g_nodeIdList[i], p_pErrorCode) == MMC_FAILED)
-		{
-			lResult = MMC_FAILED;
-		}
+		lResult = MMC_FAILED;
+		LogError("VCS_CloseDevice FAILED", lResult, *p_pErrorCode);
 	}
 
-	LogInfo("Close device");
-
-	if(VCS_CloseAllSubDevices(g_pSubKeyHandle, p_pErrorCode)!=MMC_FAILED && *p_pErrorCode == 0)
+	if(VCS_CloseAllDevices(p_pErrorCode) == MMC_FAILED)
 	{
-		lResult = MMC_SUCCESS;
-	}
-
-	if(VCS_CloseDevice(g_pKeyHandle, p_pErrorCode)!=MMC_FAILED && *p_pErrorCode == 0)
-	{
-		lResult = MMC_SUCCESS;
+		lResult = MMC_FAILED;
+		LogError("VCS_CloseAllDevices FAILED", lResult, *p_pErrorCode);
 	}
 
 	return lResult;
@@ -365,11 +358,12 @@ int EposCommunication::PrepareEpos(HANDLE p_DeviceHandle, unsigned short p_usNod
 // 	return lResult;
 // }
 
-int EposCommunication::HomingMode(unsigned int* p_pErrorCode)
+int EposCommunication::HomingMode(unsigned short p_usNodeId, unsigned int* p_pErrorCode)
 {
 	int lResult = MMC_SUCCESS;
+	HANDLE p_DeviceHandle = (p_usNodeId == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle;
 
-	lResult = ActivateHomingMode(g_pKeyHandle, g_usNodeId, p_pErrorCode);
+	lResult = ActivateHomingMode(p_DeviceHandle, p_usNodeId, p_pErrorCode);
 
 	if(lResult != MMC_SUCCESS)
 	{
@@ -452,12 +446,12 @@ int EposCommunication::ActivateHomingMode(HANDLE p_DeviceHandle, unsigned short 
 	return lResult;
 }
 
-int EposCommunication::FindHome(unsigned int* p_pErrorCode)
+int EposCommunication::FindHome(unsigned short p_usNodeId, signed char homing_method, unsigned int* p_pErrorCode)
 {
 	int lResult = MMC_SUCCESS;
-	signed char homing_method = 1; //method 1: negative limit switch
+	HANDLE p_DeviceHandle = (p_usNodeId == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle;
 
-	if(VCS_FindHome(g_pKeyHandle, g_usNodeId, homing_method, p_pErrorCode) == MMC_FAILED)
+	if(VCS_FindHome(p_DeviceHandle, p_usNodeId, homing_method, p_pErrorCode) == MMC_FAILED)
 	{
 		LogError("VCS_ActivateHomingMode", lResult, *p_pErrorCode);
 		lResult = MMC_FAILED;
@@ -465,33 +459,28 @@ int EposCommunication::FindHome(unsigned int* p_pErrorCode)
 	return lResult;
 }
 
-int EposCommunication::HomingSuccess(bool* homing_success, unsigned int* p_pErrorCode)
+int EposCommunication::HomingSuccess(unsigned short p_usNodeId, unsigned int* p_pErrorCode)
 {
 	int lResult = MMC_SUCCESS;
-	*homing_success = MMC_FAILED;
 	unsigned int timeout = 6000000; //timeout in ms, should be shorter after testing
+	HANDLE p_DeviceHandle = (p_usNodeId == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle;
 
-	if(VCS_WaitForHomingAttained(g_pKeyHandle, g_usNodeId, timeout, p_pErrorCode) == MMC_FAILED)
-	{
-		LogError("VCS_WaitForHomingAttained", lResult, *p_pErrorCode);
-		lResult = MMC_FAILED;
-	}
+	// if(VCS_WaitForHomingAttained(p_DeviceHandle, p_usNodeId, timeout, p_pErrorCode) == MMC_FAILED)
+	// {
+	// 	LogError("VCS_WaitForHomingAttained", lResult, *p_pErrorCode);
+	// 	lResult = MMC_FAILED;
+	// }
 
 	int pHomingAttained;
 	int pHomingError;
 
-	if(VCS_GetHomingState(g_pKeyHandle, g_usNodeId, &pHomingAttained, &pHomingError, p_pErrorCode) == MMC_FAILED)
+	if(VCS_GetHomingState(p_DeviceHandle, p_usNodeId, &pHomingAttained, &pHomingError, p_pErrorCode) == MMC_FAILED)
 	{
 		LogError("VCS_GetHomingState", lResult, *p_pErrorCode);
 		lResult = MMC_FAILED;
 	}
 
-	if(pHomingAttained == MMC_SUCCESS & pHomingError == 0)
-	{
-		*homing_success = MMC_SUCCESS;
-	}
-
-	return lResult;
+	return pHomingAttained;
 }
 
 int EposCommunication::SetPosition(HANDLE p_DeviceHandle, unsigned short p_usNodeId, long position_setpoint, unsigned int* p_pErrorCode)
@@ -659,7 +648,7 @@ int EposCommunication::GetVelocity(int* pVelocityIsCounts, unsigned int* p_pErro
 
 //public functions:
 
-int EposCommunication::initialization(std::vector<unsigned short> nodeIdList, int motors){
+int EposCommunication::initialization(std::vector<int> nodeIdList, int motors){
 	int lResult = MMC_SUCCESS;
 	unsigned int ulErrorCode = 0;
 
@@ -682,42 +671,11 @@ int EposCommunication::initialization(std::vector<unsigned short> nodeIdList, in
 		deviceOpenedCheckStatus = MMC_SUCCESS; //used to forbid other functions as getPosition and getVelocity if device is not opened
 	}
 	
-	//Set Sensor parameters:
-	// if((lResult = SetSensor(&ulErrorCode))==MMC_FAILED)
-	// {
-	// 	LogError("SetSensor", lResult, ulErrorCode);
-	// }
-
-	//Set Homing Parameter:
-	// if((lResult = SetHomingParameter(&ulErrorCode))==MMC_FAILED)
-	// {
-	// 	LogError("SetHomingParameter", lResult, ulErrorCode);
-	// }
-	
 	//Prepare EPOS controller:
 	if((lResult = PrepareEpos(g_pKeyHandle, g_usNodeId, &ulErrorCode))==MMC_FAILED)
 	{
 		LogError("PrepareEpos", lResult, ulErrorCode);
 	}
-
-	
-
-	// if((lResult = ActivateProfilePositionMode(g_pKeyHandle, g_usNodeId, &ulErrorCode))==MMC_FAILED)
-	// {
-	// 	LogError("PositionMode", lResult, ulErrorCode);
-	// }
-
-	// if((lResult = ActivateProfilePositionMode(g_pSubKeyHandle, g_usSubNodeId, &ulErrorCode))==MMC_FAILED)
-	// {
-	// 	LogError("PositionSubMode", lResult, ulErrorCode);
-	// }
-
-	//Set Position profile:
-	// if((lResult = SetPositionProfile(g_pKeyHandle, g_usNodeId, &ulErrorCode))==MMC_FAILED)
-	// {
-	// 	LogError("SetPositionProfile", lResult, ulErrorCode);
-	// }
-
 	
 	if(g_motors > 1)
 	{
@@ -735,11 +693,6 @@ int EposCommunication::initialization(std::vector<unsigned short> nodeIdList, in
 			{
 				LogError("PrepareSubEpos ID = ", lResult, ulErrorCode , g_nodeIdList[i]);
 			}
-
-			// if((lResult = SetPositionProfile(g_pSubKeyHandle, g_nodeIdList[i], &ulErrorCode))==MMC_FAILED)
-			// {
-			// 	LogError("SetSubPositionProfile ID = ", lResult, ulErrorCode, g_nodeIdList[i]);
-			// }
 		}
 	}
 
@@ -785,67 +738,66 @@ int EposCommunication::initialization(std::vector<unsigned short> nodeIdList, in
 		std::cout<<"ID: "<<g_nodeIdList[i]<<", pMaxFollowingError: "<<pMaxFollowingError<<", pMaxProfileVelocity: "<<pMaxProfileVelocity<<", pMaxAcceleration: "<<pMaxAcceleration<<std::endl;
 	}
 	
-	// for(int i = 1; i <= g_motors; i++)
-	// {
-	// 	if((lResult = setHomingParameter(i, &ulErrorCode))==MMC_FAILED)
-	// 	{
-	// 		LogError("SetHomingParameter", lResult, ulErrorCode);
-	// 	}
-	// }
-
 	LogInfo("Initialization successful");
 
 	return lResult;
 }
 
-int EposCommunication::setHomingParameter(unsigned short p_usNodeId, unsigned int* p_pErrorCode)
+int EposCommunication::setHomingParameter(unsigned short p_usNodeId, unsigned int p_Velocity)
 {
 	//to use set variables below first!
+	p_Velocity = (p_Velocity > pMaxProfileVelocity) ? pMaxProfileVelocity : p_Velocity;
 	int lResult = MMC_SUCCESS;
-	unsigned int homing_acceleration = 20;
-	unsigned int speed_switch = 50;
-	unsigned int speed_index = 50;
-	int home_offset = radsToCounts(0.5);
+	unsigned int *ulErrorCode = 0;
+	unsigned int homing_acceleration = pMaxAcceleration;
+	unsigned int speed_switch = p_Velocity;
+	unsigned int speed_index = p_Velocity;
+	int home_offset = 0;
 	unsigned short current_threshold = 0;
-	int home_position = radsToCounts(0.5);
+	int home_position = 0;
 	HANDLE p_DeviceHandle = (p_usNodeId == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle;
-	if(VCS_SetHomingParameter(p_DeviceHandle, p_usNodeId, homing_acceleration, speed_switch, speed_index, home_offset, current_threshold, home_position, p_pErrorCode) == MMC_FAILED)
+	if(VCS_SetHomingParameter(p_DeviceHandle, p_usNodeId, homing_acceleration, speed_switch, speed_index, home_offset, current_threshold, home_position, ulErrorCode) == MMC_FAILED)
 	{
 		lResult = MMC_FAILED;
-		LogError("VCS_SetHomingParameter", lResult, *p_pErrorCode);
+		LogError("VCS_SetHomingParameter", lResult, *ulErrorCode);
 	}
 
 	return lResult;
 }
 
-int EposCommunication::homing()
+int EposCommunication::homing(unsigned short p_usNodeId, bool refind)
 {
 	int lResult = MMC_FAILED;
 	unsigned int ulErrorCode = 0;
+	signed char homing_method;
+	if(refind)
+		homing_method = HM_HOME_SWITCH_NEGATIVE_SPEED;
+	else
+		homing_method = HM_HOME_SWITCH_NEGATIVE_SPEED;
 
 	//Start homing mode:
-	if((lResult = HomingMode(&ulErrorCode))==MMC_FAILED)
+	if((lResult = HomingMode(p_usNodeId, &ulErrorCode))==MMC_FAILED)
 	{
 		LogError("HomingMode", lResult, ulErrorCode);
 	}
 
 	//Find home:
-	if((lResult = FindHome(&ulErrorCode))==MMC_FAILED)
+	if((lResult = FindHome(p_usNodeId, homing_method, &ulErrorCode))==MMC_FAILED)
 	{
 		LogError("FindHome", lResult, ulErrorCode);
 	}
+	return lResult;
+}
 
-	//Check if successfull:
-	bool homing_success_status = MMC_FAILED;
-	if((lResult = HomingSuccess(&homing_success_status, &ulErrorCode))==MMC_FAILED)
-	{
-		LogError("HomingSuccess", lResult, ulErrorCode);
-	}
-	else{
-		homingCompletedStatus = MMC_SUCCESS;
-	}
-
-	return homing_success_status;
+int EposCommunication::homingSuccess(unsigned short p_usNodeId)
+{
+	int lResult = MMC_FAILED;
+	unsigned int ulErrorCode = 0;
+	// if((lResult = HomingSuccess(p_usNodeId, &ulErrorCode))==MMC_FAILED)
+	// {
+	// 	LogError("HomingSuccess", lResult, ulErrorCode);
+	// }
+	return HomingSuccess(p_usNodeId, &ulErrorCode);
 }
 
 int EposCommunication::startPositionMode(std::vector<int> id_list)
@@ -1020,7 +972,6 @@ int EposCommunication::closeDevice(){
 	//Close device:
 	int lResult = MMC_FAILED;
 	unsigned int ulErrorCode = 0;
-
 	if((lResult = CloseDevice(&ulErrorCode))==MMC_FAILED)
 	{
 		LogError("CloseDevice", lResult, ulErrorCode);
