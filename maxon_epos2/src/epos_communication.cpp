@@ -7,6 +7,7 @@
 // Description : Class providing the communication functions for Maxon EPOS2.
 //		 		 Install EPOS2 Linux Library from Maxon first!
 //============================================================================
+#include <cmath>
 #include "maxon_epos2/epos_communication.hpp"
 
 namespace maxon_epos2 {
@@ -17,6 +18,7 @@ EposCommunication::EposCommunication()
 	g_pSubKeyHandle = 0;
 	g_usNodeId = 1;
 	g_baudrate = 0;
+	swerve_gear_ratio = 1;
 }
 
 EposCommunication::~EposCommunication()
@@ -966,6 +968,27 @@ int EposCommunication::getVelocity(unsigned short p_usNodeId, double* pVelocityI
 	}
 	*pVelocityIs = rpmToRads(pVelocityIsCounts);
 	return lResult;
+}
+
+void EposCommunication::resetHomePoseition(unsigned short p_usNodeId)
+{
+	int moto_pos = 0;
+	unsigned int ulErrorCode = 0;
+	int lResult = MMC_SUCCESS;
+	HANDLE p_DeviceHandle = (p_usNodeId == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle;
+	lResult = VCS_GetPositionIs(p_DeviceHandle, p_usNodeId, &moto_pos, &ulErrorCode);
+	lResult = VCS_SetPositionMust(p_DeviceHandle, p_usNodeId, moto_pos, &ulErrorCode);
+	lResult = VCS_ActivateHomingMode(p_DeviceHandle, p_usNodeId, &ulErrorCode);
+	int home_pos;
+	if(moto_pos > 0)
+		home_pos = moto_pos - radsToCounts(2 * M_PI / swerve_gear_ratio);
+	else
+		home_pos = radsToCounts(2 * M_PI / swerve_gear_ratio) - moto_pos;
+	lResult = VCS_DefinePosition(p_DeviceHandle, p_usNodeId, home_pos, &ulErrorCode);
+	lResult = VCS_ActivatePositionMode(p_DeviceHandle, p_usNodeId, &ulErrorCode);
+	if(lResult == MMC_FAILED)
+		LogError("resetHomePoseition Failed", lResult, ulErrorCode, p_usNodeId);
+	return;
 }
 
 int EposCommunication::closeDevice(){

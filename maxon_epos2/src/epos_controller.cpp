@@ -30,6 +30,8 @@ EposController::EposController(ros::NodeHandle& nodeHandle)
     nodeHandle_.getParam("id_list", id_list);
 	nodeHandle_.getParam("pos_list", pos_list);
     nodeHandle_.getParam("vel_list", vel_list);
+	swerve_gear_ratio = nodeHandle.param<double>("swerve_gear_ratio", 0.2193);
+	epos_device_.setSwerveJointGearRatio(swerve_gear_ratio);
 	this->motors = id_list.size();
 	for (auto it = id_list.begin(); it != id_list.end(); ++it)
 	{
@@ -169,6 +171,8 @@ bool EposController::writePosition(int id, double& cmd, double offset)
 
 bool EposController::writePosition(int id)
 {
+	if(fabs(cmd[id] - pos[id]) > (M_PI / swerve_gear_ratio))
+		epos_device_.resetHomePoseition(id);
 	if(epos_device_.setPositionMust(id, cmd[id])==MMC_FAILED)
 	{
 		ROS_ERROR("Seting position failed");

@@ -86,6 +86,7 @@ class EposController
 
   std::vector<unsigned short> id_list_;
   int motors;
+  double swerve_gear_ratio;
 };
 
 } /* namespace */

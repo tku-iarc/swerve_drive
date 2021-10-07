@@ -82,6 +82,8 @@ class EposCommunication
   int 	getPosition(unsigned short p_usNodeI, double* pPositionIs);
   int 	getVelocity(unsigned short p_usNodeI, double* pVelocityIs);
   int 	closeDevice();
+  void  setSwerveJointGearRatio(double ratio){swerve_gear_ratio = ratio;}
+  void  resetHomePoseition(unsigned short p_usNodeId);
 
  private:
   //define HANDLE
@@ -107,6 +109,8 @@ class EposCommunication
   std::string g_interfaceName;
   std::string g_portName;
   const std::string g_programName = "EPOS2 Controller";
+
+  double swerve_gear_ratio;
   
   //Functions:
   void  LogError(std::string functionName, int p_lResult, unsigned int p_ulErrorCode, unsigned short p_usNodeId);
