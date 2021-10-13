@@ -15,6 +15,8 @@
 
 
 #define DOF 2
+#define WHEEL_DIAMETER 0.15
+#define WHEEL_RADIUS 0.075
 
 enum WheelState {Idle, Busy, Error, Disable};
 
@@ -26,7 +28,8 @@ private:
     WheelState wheel_state;
     hardware_interface::SwerveDriveInterface* swerve_drive_interface;
     controller_manager::ControllerManager* wheel_cm;
-
+    double metersToRads(const double &meters);
+    double radsTometers(const double &rads);
     ros::NodeHandle& nodeHandle_;
 
     ros::Subscriber wheel_cmds_sub_;

@@ -68,7 +68,7 @@ void WheelController::jointDataInit(int swerve_id, int wheel_id, double swerve_g
 void WheelController::wheelCmdsCallback(const std_msgs::Float64MultiArray::ConstPtr& msg)
 {
     double swerve_angle = atan2(msg->data[1], msg->data[0]);
-    double wheel_velocity = sqrt(msg->data[0]*msg->data[0] + msg->data[1]*msg->data[1]);
+    double wheel_velocity = metersToRads(sqrt(msg->data[0]*msg->data[0] + msg->data[1]*msg->data[1]));
     double dis_angle = (fabs(swerve_angle - joint_data[0]->joint_angle_) > M_PI) ? 
         2 * M_PI - fabs(swerve_angle - joint_data[0]->joint_angle_) : fabs(swerve_angle - joint_data[0]->joint_angle_);
     if(dis_angle > M_PI / 2)
@@ -81,6 +81,16 @@ void WheelController::wheelCmdsCallback(const std_msgs::Float64MultiArray::Const
     swerve_joint_pub_.publish(cmd);
     cmd.data = wheel_velocity;
     wheel_joint_pub_.publish(cmd);
+}
+
+double WheelController::metersToRads(const double &meters)
+{
+    return meters / WHEEL_RADIUS;
+}
+
+double WheelController::radsTometers(const double &rads)
+{
+    return rads * WHEEL_RADIUS;
 }
 
 void WheelController::process(ros::Rate& loop_rate)

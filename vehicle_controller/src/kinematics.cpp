@@ -5,13 +5,38 @@ namespace vehicle_controller
 VehicleKinematics::VehicleKinematics()
 {
 }
+
 VehicleKinematics::~VehicleKinematics()
 {
 }
+
 bool VehicleKinematics::forwardKinematics(KinematicsData &kinematics_data)
 {
-
+    double ang_vel = 0; double dir_x = 0; double dir_y = 0;
+    double ang_vel_cnt = 0; double dir_cnt = 0;
+    for(int i=0; i<kinematics_data.wheel_data.size()-1; i++)
+    {
+        for(int j=i+1; j<kinematics_data.wheel_data.size(); j++)
+        {
+            ang_vel += (kinematics_data.wheel_data[i].direction[0] - kinematics_data.wheel_data[j].direction[0])
+                       / (kinematics_data.wheel_data[j].position[1] - kinematics_data.wheel_data[i].position[1]);
+            ang_vel += (kinematics_data.wheel_data[i].direction[1] - kinematics_data.wheel_data[j].direction[1])
+                       / (kinematics_data.wheel_data[i].position[0] - kinematics_data.wheel_data[j].position[0]);
+            ang_vel_cnt += 2;
+        }
+    }
+    ang_vel /= ang_vel_cnt;
+    for(int i=0; i<kinematics_data.wheel_data.size(); i++)
+    {
+        dir_x += kinematics_data.wheel_data[i].direction[0] + ang_vel * kinematics_data.wheel_data[i].position[1];
+        dir_y += kinematics_data.wheel_data[i].direction[1] + ang_vel * kinematics_data.wheel_data[i].position[0];
+        dir_cnt += 1;
+    }
+    kinematics_data.angular_velocity = ang_vel;
+    kinematics_data.direction[0] = dir_x / dir_cnt;
+    kinematics_data.direction[1] = dir_y / dir_cnt;
 }
+
 bool VehicleKinematics::inverseKinematics(KinematicsData &kinematics_data)
 {
     for (auto it = kinematics_data.wheel_data.begin() ; it != kinematics_data.wheel_data.end(); ++it)
@@ -22,6 +47,7 @@ bool VehicleKinematics::inverseKinematics(KinematicsData &kinematics_data)
             it->direction[i] = kinematics_data.direction[i] + wheel_direction[i];
     }
 }
+
 void VehicleKinematics::angularVelocityToDirection(const double &ang_vel, const Double2 &position, Double2 &direction)
 {
     // position include the radius of rotation, so no need to calculate radius.
@@ -35,6 +61,7 @@ double VehicleKinematics::metersToRads(const double &meters)
 {
     return meters / WHEEL_RADIUS;
 }
+
 double VehicleKinematics::radsTometers(const double &rads)
 {
     return rads * WHEEL_RADIUS;
