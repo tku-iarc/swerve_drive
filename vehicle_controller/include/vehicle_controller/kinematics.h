@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include "vehicle_controller/vehicle_controller_define.h"
 

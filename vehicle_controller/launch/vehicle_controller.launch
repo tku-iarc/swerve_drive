@@ -1,0 +1,34 @@
+<launch>
+    <arg name="wheels_name" default="[/lf_wheel, /rf_wheel, /rr_wheel, /lr_wheel]"/>
+    <arg name="dir_acc_max" default="1"/>
+    <arg name="ang_acc_max" default="1"/>
+
+    <group ns="lf_wheel">
+        <include file="$(find wheel_controller)/launch/wheel_control.launch">
+            <arg name="swerve_id"    value="1"/>
+            <arg name="wheel_id"     value="2"/>
+        </include>
+    </group>
+    <group ns="rf_wheel">
+        <include file="$(find wheel_controller)/launch/wheel_control.launch">
+            <arg name="swerve_id"    value="3"/>
+            <arg name="wheel_id"     value="4"/>
+        </include>
+    </group>
+    <group ns="rr_wheel">
+        <include file="$(find wheel_controller)/launch/wheel_control.launch">
+            <arg name="swerve_id"    value="5"/>
+            <arg name="wheel_id"     value="6"/>
+        </include>
+    </group>
+    <group ns="lr_wheel">
+        <include file="$(find wheel_controller)/launch/wheel_control.launch">
+            <arg name="swerve_id"    value="7"/>
+            <arg name="wheel_id"     value="8"/>
+        </include>
+    </group>
+
+    <node name="vehicle_controller" pkg="vehicle_controller" type="vehicle_controller_node" output="screen">
+        <rosparam param="wheels_name" subst_value="True">$(arg wheels_name)</rosparam>
+    </node>
+</launch>

@@ -1,10 +1,11 @@
 #include <cmath>
 #include "wheel_controller/wheel_controller.h"
 
-WheelController::WheelController(ros::NodeHandle& nodeHandle)
-    :nodeHandle_(nodeHandle)
+WheelController::WheelController(ros::NodeHandle& nodeHandle, std::string& wheel_name)
+    :nodeHandle_(nodeHandle), wheel_name_(wheel_name)
 {
     ros::NodeHandle nh_private("~");
+    // wheel_name_ = wheel_name;
     sample_rate = nh_private.param<int>("sample_rate", 12);
     control_mode = nh_private.param<std::string>("control_mode", "velocity");
     int swerve_id = nh_private.param<int>("swerve_id", 1);
@@ -17,7 +18,8 @@ WheelController::WheelController(ros::NodeHandle& nodeHandle)
     swerve_drive_interface = new hardware_interface::SwerveDriveInterface(nodeHandle_, this->joint_data, sample_rate, control_mode);
     wheel_cm = new controller_manager::ControllerManager(swerve_drive_interface, nodeHandle);
 
-    wheel_cmds_sub_ = nodeHandle_.subscribe("wheel_cmds", 16, &WheelController::wheelCmdsCallback, this);
+    wheel_cmd_sub_ = nodeHandle_.subscribe("wheel_cmd", 16, &WheelController::wheelCmdCallback, this);
+    wheel_state_pub_ = nodeHandle_.advertise<wheel_controller::WheelState>("wheel_state", 1);
 	swerve_joint_pub_ = nodeHandle_.advertise<std_msgs::Float64>("swerve_controller/command", 1);
     wheel_joint_pub_ = nodeHandle_.advertise<std_msgs::Float64>("wheel_controller/command", 1);
 }
@@ -65,7 +67,7 @@ void WheelController::jointDataInit(int swerve_id, int wheel_id, double swerve_g
     joint_data[1]->gear_ratio_   = wheel_gear_ratio;
 }
 
-void WheelController::wheelCmdsCallback(const std_msgs::Float64MultiArray::ConstPtr& msg)
+void WheelController::wheelCmdCallback(const std_msgs::Float64MultiArray::ConstPtr& msg)
 {
     double swerve_angle = atan2(msg->data[1], msg->data[0]);
     double wheel_velocity = metersToRads(sqrt(msg->data[0]*msg->data[0] + msg->data[1]*msg->data[1]));
@@ -93,6 +95,19 @@ double WheelController::radsTometers(const double &rads)
     return rads * WHEEL_RADIUS;
 }
 
+void WheelController::statePublish()
+{
+    double dir[2];
+    wheel_controller::WheelState state;
+    state.wheel_name = wheel_name_;
+    dir[0] = (joint_data[0]->joint_angle_ >= 0) ? acos(joint_data[0]->joint_angle_) : -1 * acos(joint_data[0]->joint_angle_);
+    dir[0] *= metersToRads(joint_data[1]->velocity_);
+    dir[1] = asin(joint_data[0]->joint_angle_) * metersToRads(joint_data[1]->velocity_);
+    state.wheel_dir.push_back(dir[0]);
+    state.wheel_dir.push_back(dir[1]);
+    wheel_state_pub_.publish(state);
+}
+
 void WheelController::process(ros::Rate& loop_rate)
 {
     ros::Time start_time = ros::Time::now();
@@ -110,5 +125,6 @@ void WheelController::process(ros::Rate& loop_rate)
     }
     wheel_cm->update(ros::Time::now(), loop_rate.expectedCycleTime());
     swerve_drive_interface->writeVelocity(loop_rate.expectedCycleTime());
+    statePublish();
     return;
 }

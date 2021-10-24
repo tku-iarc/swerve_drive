@@ -6,15 +6,14 @@
 
 namespace vehicle_controller
 {
-enum WheelSide {left_front, right_front, right_rear, left_rear};
 typedef double Double2[2];
 
 typedef struct 
 {
 public:
-    WheelSide wheel_side;
-    Double2   direction;
-    Double2   position;
+    std::string wheel_name;
+    Double2     direction;
+    Double2     position;
 } WheelData;
 
 typedef struct 

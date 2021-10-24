@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 
 	signal(SIGINT, sigintHandler);
 
-	controller = new vehicle_controller::VehicleController();
+	controller = new vehicle_controller::VehicleController(nodeHandle);
 
 	ros::Rate loop_rate(10);
 	while (ros::ok()){
