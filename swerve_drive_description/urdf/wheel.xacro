@@ -105,7 +105,7 @@
         <child
         link="${side}wheel_link" />
         <axis
-        xyz="0 -1 0" />
+        xyz="0 1 0" />
     </joint>
     <xacro:wheel_transmission side="${side}"/>
     <xacro:wheel_gazebo side="${side}"/>

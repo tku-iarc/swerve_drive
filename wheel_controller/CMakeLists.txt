@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  sensor_msgs
   message_generation
   maxon_epos2
   controller_manager
@@ -53,7 +54,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  WheelState.msg
+  WheelDirection.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -106,7 +107,7 @@ generate_messages(
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES wheel_controller
- CATKIN_DEPENDS roscpp rospy  maxon_epos2 controller_manager hardware_interface std_msgs message_runtime
+ CATKIN_DEPENDS roscpp rospy  maxon_epos2 controller_manager hardware_interface std_msgs sensor_msgs message_runtime
 #  DEPENDS system_lib
 )
 

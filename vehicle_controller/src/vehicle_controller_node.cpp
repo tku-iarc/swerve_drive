@@ -26,10 +26,10 @@ int main(int argc, char** argv)
 
 	controller = new vehicle_controller::VehicleController(nodeHandle);
 
-	ros::Rate loop_rate(10);
+	ros::Rate loop_rate(20);
 	while (ros::ok()){
 		ros::spinOnce();
-		controller->process();
+		controller->process(loop_rate);
 		loop_rate.sleep();
 	}
 	spinner.stop();

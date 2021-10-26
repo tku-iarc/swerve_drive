@@ -1,34 +1,49 @@
 <launch>
-    <arg name="wheels_name" default="[/lf_wheel, /rf_wheel, /rr_wheel, /lr_wheel]"/>
+    <arg name="sim"         default="false"/>
     <arg name="dir_acc_max" default="1"/>
     <arg name="ang_acc_max" default="1"/>
 
     <group ns="lf_wheel">
         <include file="$(find wheel_controller)/launch/wheel_control.launch">
+            <arg name="sim"          value="$(arg sim)"/>
+            <arg name="wheel_name"   value="lf_wheel"/>
             <arg name="swerve_id"    value="1"/>
             <arg name="wheel_id"     value="2"/>
         </include>
     </group>
     <group ns="rf_wheel">
         <include file="$(find wheel_controller)/launch/wheel_control.launch">
+            <arg name="sim"          value="$(arg sim)"/>
+            <arg name="wheel_name"   value="rf_wheel"/>
             <arg name="swerve_id"    value="3"/>
             <arg name="wheel_id"     value="4"/>
         </include>
     </group>
     <group ns="rr_wheel">
         <include file="$(find wheel_controller)/launch/wheel_control.launch">
+            <arg name="sim"          value="$(arg sim)"/>
+            <arg name="wheel_name"   value="rr_wheel"/>
             <arg name="swerve_id"    value="5"/>
             <arg name="wheel_id"     value="6"/>
         </include>
     </group>
     <group ns="lr_wheel">
         <include file="$(find wheel_controller)/launch/wheel_control.launch">
+            <arg name="sim"          value="$(arg sim)"/>
+            <arg name="wheel_name"   value="lr_wheel"/>
             <arg name="swerve_id"    value="7"/>
             <arg name="wheel_id"     value="8"/>
         </include>
     </group>
 
     <node name="vehicle_controller" pkg="vehicle_controller" type="vehicle_controller_node" output="screen">
-        <rosparam param="wheels_name" subst_value="True">$(arg wheels_name)</rosparam>
+        <rosparam command="load" file="$(find vehicle_controller)/config/wheel_data.yaml" />
     </node>
+
+    <include file="$(find swerve_drive_description)/launch/gazebo.launch" if="$(arg sim)"/>
+
+    <node pkg="joy" type="joy_node" name="joystick" output="screen">
+        <param name="joy_node/dev" value="/dev/input/js0"/>
+    </node>
+
 </launch>

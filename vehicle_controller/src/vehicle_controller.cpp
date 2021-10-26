@@ -8,20 +8,22 @@ VehicleController::VehicleController(ros::NodeHandle& nodeHandle)
     nodeHandle_.param<float>("dir_acc_max", dir_acc_max_, 1);
     nodeHandle_.param<float>("ang_acc_max", ang_acc_max_, 1);
     cmd_sub_ = nodeHandle_.subscribe("vehicle/cmd", 1, &VehicleController::vehicleCmdCallback, this);
+    joy_sub = nodeHandle_.subscribe("joy", 1, &VehicleController::joysticMsgCallback, this);
     state_pub_ = nodeHandle_.advertise<vehicle_controller::VehicleState>("vehicle/state", 1);
     calib_server_ = nodeHandle_.advertiseService("vehicle/calibration", &VehicleController::calibrationCallback, this);
     
-    nodeHandle_.getParam("vehicle_controller/wheels_name", wheels_name_);
+    nodeHandle_.getParam("vehicle_controller/wheel_data/wheels_name", wheels_name_);
 
     for(auto it=wheels_name_.begin(); it!=wheels_name_.end(); ++it)
     {
-        ros::Publisher wheel_pub = nodeHandle_.advertise<std_msgs::Float64MultiArray>(*it + "/wheel_cmd", 8);
+        ros::Publisher wheel_pub = nodeHandle_.advertise<wheel_controller::WheelDirection>(*it + "/wheel_cmd", 8);
         ros::Subscriber wheel_sub = nodeHandle_.subscribe(*it + "/wheel_state", 8, &VehicleController::wheelStateCallback, this);
         wheels_pub_.insert(std::pair<std::string, ros::Publisher>(*it, wheel_pub));
         wheels_sub_.insert(std::pair<std::string, ros::Subscriber>(*it, wheel_sub));
     }
 
     initKinematicsData();
+    kinematics = VehicleKinematics();
 }
 
 VehicleController::~VehicleController()
@@ -31,27 +33,126 @@ VehicleController::~VehicleController()
 
 void VehicleController::initKinematicsData()
 {
-
+    kinematics_data_.direction[0] = 0;
+    kinematics_data_.direction[1] = 0;
+    kinematics_data_.direction_cmd[0] = 0;
+    kinematics_data_.direction_cmd[1] = 0;
+    kinematics_data_.position[0] = 0;
+    kinematics_data_.position[1] = 0;
+    kinematics_data_.angular_velocity = 0;
+    kinematics_data_.angular_velocity_cmd = 0;
+    kinematics_data_.rotation = 0;
+    for(auto it = wheels_name_.begin(); it != wheels_name_.end(); ++it)
+    {
+        WheelData wheel_data;
+        wheel_data.wheel_name = *it;
+        wheel_data.direction[0] = 0;
+        wheel_data.direction[1] = 0;
+        wheel_data.direction_cmd[0] = 0;
+        wheel_data.direction_cmd[1] = 0;
+        wheel_data.pos_on_vehicle[0] = nodeHandle_.param<double>("vehicle_controller/wheel_data/" + *it + "/pos_on_vehicle_x", 1);
+        wheel_data.pos_on_vehicle[1] = nodeHandle_.param<double>("vehicle_controller/wheel_data/" + *it + "/pos_on_vehicle_y", 1);
+        kinematics_data_.wheel_data_vector.push_back(wheel_data);
+        kinematics_data_.wheel_data.insert(std::pair<std::string, WheelData>(*it, wheel_data));
+    }
 }
 
 bool VehicleController::calibrationCallback(vehicle_controller::Calibration::Request &req, 
                                             vehicle_controller::Calibration::Response &res)
 {
+    kinematics_data_.position[0] = req.pos_x;
+    kinematics_data_.position[1] = req.pos_y;
+    kinematics_data_.rotation = req.pos_r;
+    res.success = true;
     return true;
 }
 
-void VehicleController::wheelStateCallback(const wheel_controller::WheelState::ConstPtr& state)
+void VehicleController::wheelStateCallback(const wheel_controller::WheelDirection::ConstPtr& state)
 {
-    std::cout<<"Get callback success, wheel name is "<<state->wheel_name<<std::endl;
+    kinematics_data_.wheel_data[state->wheel_name].direction[0] = state->dir_x;
+    kinematics_data_.wheel_data[state->wheel_name].direction[1] = state->dir_y;
 }
 
 void VehicleController::vehicleCmdCallback(const vehicle_controller::VehicleCmd::ConstPtr& cmd)
 {
+    kinematics_data_.direction_cmd[0] = cmd->vel_x;
+    kinematics_data_.direction_cmd[1] = cmd->vel_y;
+    kinematics_data_.angular_velocity_cmd = cmd->vel_r;
+    this->ensureCmdLimit();
+    kinematics.inverseKinematics(kinematics_data_);
 
+    for(auto it=kinematics_data_.wheel_data.begin(); it!=kinematics_data_.wheel_data.end(); it++)
+    {
+        wheel_controller::WheelDirection wheel_dir;
+        wheel_dir.wheel_name = it->first;
+        wheel_dir.dir_x = it->second.direction_cmd[0];
+        wheel_dir.dir_y = it->second.direction_cmd[1];
+        wheels_pub_[it->first].publish(wheel_dir);
+    }
 }
 
-void VehicleController::process()
+void VehicleController::joysticMsgCallback(const sensor_msgs::Joy::ConstPtr& msg)
 {
-    
+    if(msg->axes[5] > -0.9)
+        return;
+    kinematics_data_.direction_cmd[0] = msg->axes[1];
+    kinematics_data_.direction_cmd[1] = msg->axes[0];
+    kinematics_data_.angular_velocity_cmd = msg->axes[3];
+    this->ensureCmdLimit();
+    kinematics.inverseKinematics(kinematics_data_);
+
+    for(auto it=kinematics_data_.wheel_data.begin(); it!=kinematics_data_.wheel_data.end(); it++)
+    {
+        wheel_controller::WheelDirection wheel_dir;
+        wheel_dir.wheel_name = it->first;
+        wheel_dir.dir_x = it->second.direction_cmd[0];
+        wheel_dir.dir_y = it->second.direction_cmd[1];
+        wheels_pub_[it->first].publish(wheel_dir);
+    }
+}
+
+void VehicleController::ensureCmdLimit()
+{
+    double norm_curr, norm_cmd, dis;
+    norm_curr = sqrt(pow(kinematics_data_.direction[0], 2) + pow(kinematics_data_.direction[1], 2));
+    norm_cmd = sqrt(pow(kinematics_data_.direction_cmd[0], 2) + pow(kinematics_data_.direction_cmd[1], 2));
+    if(norm_cmd < 0.00001 && kinematics_data_.angular_velocity_cmd < 0.00001)
+        return;
+    dis = fabs(norm_cmd - norm_curr);
+    if(dis > dir_acc_max_)
+    {
+        kinematics_data_.direction_cmd[0] *= (dir_acc_max_ / dis);
+        kinematics_data_.direction_cmd[1] *= (dir_acc_max_ / dis);
+    }
+    dis = fabs(kinematics_data_.angular_velocity_cmd - kinematics_data_.angular_velocity);
+    if(dis > ang_acc_max_)
+        kinematics_data_.angular_velocity_cmd *= (ang_acc_max_ / dis);
+}
+
+void VehicleController::vehicleOdometer(ros::Rate& loop_rate)
+{
+    kinematics.forwardKinematics(kinematics_data_);
+    double cycle_time = loop_rate.expectedCycleTime().toSec();
+    kinematics_data_.position[0] += kinematics_data_.direction[0] * cycle_time;
+    kinematics_data_.position[1] += kinematics_data_.direction[1] * cycle_time;
+    kinematics_data_.rotation += kinematics_data_.angular_velocity * cycle_time;
+}
+
+void VehicleController::vehicleStatePublish()
+{
+    vehicle_controller::VehicleState state;
+    state.vel_x = kinematics_data_.direction[0];
+    state.vel_y = kinematics_data_.direction[1];
+    state.vel_r = kinematics_data_.angular_velocity;
+    state.pos_x = kinematics_data_.position[0];
+    state.pos_y = kinematics_data_.position[1];
+    state.pos_r = kinematics_data_.rotation;
+    state_pub_.publish(state);
+}
+
+void VehicleController::process(ros::Rate& loop_rate)
+{
+    this->vehicleOdometer(loop_rate);
+    this->vehicleStatePublish();
 }
 }

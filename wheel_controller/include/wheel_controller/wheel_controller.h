@@ -8,8 +8,9 @@
 #include <ros/package.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Float64MultiArray.h>
+#include <sensor_msgs/JointState.h>
 #include <controller_manager/controller_manager.h>
-#include <wheel_controller/WheelState.h>
+#include <wheel_controller/WheelDirection.h>
 #include "wheel_controller/hardware_interface.h"
 #include "wheel_controller/joint_data.h"
 
@@ -33,15 +34,18 @@ private:
     ros::NodeHandle& nodeHandle_;
 
     ros::Subscriber wheel_cmd_sub_;
+    ros::Subscriber joint_state_sub_;
     ros::Publisher  wheel_state_pub_;
     ros::Publisher  swerve_joint_pub_;
     ros::Publisher  wheel_joint_pub_;
     std::string wheel_name_;
+    bool sim_;
 
 public:
-    WheelController(ros::NodeHandle& nodeHandle, std::string& wheel_name);
+    WheelController(ros::NodeHandle& nodeHandle);
     ~WheelController();
-    void wheelCmdCallback(const std_msgs::Float64MultiArray::ConstPtr& msg);
+    void jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
+    void wheelCmdCallback(const wheel_controller::WheelDirection::ConstPtr& msg);
     void statePublish();
     void process(ros::Rate& loop_rate);
     std::vector<JointData*> joint_data;

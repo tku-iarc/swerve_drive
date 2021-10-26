@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  sensor_msgs
   message_generation
 )
 
@@ -105,7 +106,7 @@ generate_messages(
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES vehicle_controller
- CATKIN_DEPENDS roscpp rospy std_msgs
+ CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs
  DEPENDS system_lib message_runtime
 )
 
@@ -134,7 +135,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/vehicle_controller_node.cpp src/vehicle_controller.cpp)
+add_executable(${PROJECT_NAME}_node src/vehicle_controller_node.cpp src/vehicle_controller.cpp src/kinematics.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

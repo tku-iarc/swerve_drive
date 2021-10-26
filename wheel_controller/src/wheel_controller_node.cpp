@@ -22,13 +22,13 @@ int main(int argc, char** argv)
 	ros::NodeHandle nodeHandle;
 
 	signal(SIGINT, sigintHandler);
-	std::string wheel_name = ros::this_node::getNamespace();
-	controller = new WheelController(nodeHandle, wheel_name);
+	controller = new WheelController(nodeHandle);
 
 	ros::Rate loop_rate(controller->sample_rate);
 	while (ros::ok()){
 		ros::spinOnce();
 		controller->process(loop_rate);
+    	controller->statePublish();
 		loop_rate.sleep();
 	}
 	spinner.stop();
