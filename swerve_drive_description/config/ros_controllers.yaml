@@ -1,0 +1,52 @@
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 50
+
+# swerve_drive_controller:
+lf_wheel:
+  swerve_controller:
+    type: position_controllers/JointPositionController
+    joint: lf_swerve_joint
+    pid: {p: 5.0, i: 0.01, d: 0.1}
+  wheel_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: lf_wheel_joint
+    pid: {p: 5.0, i: 0.01, d: 0.1}
+rf_wheel:
+  swerve_controller:
+    type: position_controllers/JointPositionController
+    joint: rf_swerve_joint
+    pid: {p: 5.0, i: 0.01, d: 0.1}
+  wheel_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: rf_wheel_joint
+    pid: {p: 5.0, i: 0.01, d: 0.1}
+rr_wheel:
+  swerve_controller:
+    type: position_controllers/JointPositionController
+    joint: rr_swerve_joint
+    pid: {p: 5.0, i: 0.01, d: 0.1}
+  wheel_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: rr_wheel_joint
+    pid: {p: 5.0, i: 0.01, d: 0.1}
+lr_wheel:
+  swerve_controller:
+    type: position_controllers/JointPositionController
+    joint: lr_swerve_joint
+    pid: {p: 5.0, i: 0.01, d: 0.1}
+  wheel_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: lr_wheel_joint
+    pid: {p: 5.0, i: 0.01, d: 0.1}  
+
+gazebo_ros_control:
+  pid_gains:
+    lf_swerve_joint: {p: 1.0, i: 0.0, d: 0.05}
+    rf_swerve_joint: {p: 1.0, i: 0.0, d: 0.05}
+    rr_swerve_joint: {p: 1.0, i: 0.0, d: 0.05}
+    lr_swerve_joint: {p: 1.0, i: 0.0, d: 0.05}
+    lf_wheel_joint: {p: 1.0, i: 0.0, d: 0.0}
+    rf_wheel_joint: {p: 1.0, i: 0.0, d: 0.0}
+    rr_wheel_joint: {p: 1.0, i: 0.0, d: 0.0}
+    lr_wheel_joint: {p: 1.0, i: 0.0, d: 0.0}

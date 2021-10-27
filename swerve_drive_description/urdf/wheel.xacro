@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.gazebo.xacro" />
+  <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.transmission.xacro" />
+  <xacro:macro name="swerve_wheel" params="side parent *origin">
+    <link
+        name="${side}swerve_link">
+        <inertial>
+        <origin
+            xyz="-6.5343E-06 0.003953 -0.024575"
+            rpy="0 0 0" />
+        <mass
+            value="0.23291" />
+        <inertia
+            ixx="0.00017789"
+            ixy="3.1284E-09"
+            ixz="9.3072E-09"
+            iyy="0.00031161"
+            iyz="2.3005E-08"
+            izz="0.00028635" />
+        </inertial>
+        <visual>
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0" />
+        <geometry>
+            <mesh
+            filename="package://swerve_drive_description/meshes/swerve_link.STL" />
+        </geometry>
+        <material
+            name="">
+            <color
+            rgba="0.75294 0.75294 0.75294 1" />
+        </material>
+        </visual>
+        <collision>
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0" />
+        <geometry>
+            <mesh
+            filename="package://swerve_drive_description/meshes/swerve_link.STL" />
+        </geometry>
+        </collision>
+    </link>
+    <joint
+        name="${side}swerve_joint"
+        type="continuous">
+        <xacro:insert_block name="origin" />
+        <parent
+            link="${parent}" />
+        <child
+            link="${side}swerve_link" />
+        <axis
+            xyz="0 0 1" />
+        <limit
+            effort="100"
+            velocity="3.2" />
+    </joint>
+    <link
+        name="${side}wheel_link">
+        <inertial>
+        <origin
+            xyz="-1.1437E-05 -4.8244E-06 -7.4559E-06"
+            rpy="0 0 0" />
+        <mass
+            value="0.39722" />
+        <inertia
+            ixx="0.00072419"
+            ixy="-2.8256E-08"
+            ixz="2.0907E-08"
+            iyy="0.0013599"
+            iyz="-1.7286E-08"
+            izz="0.00072418" />
+        </inertial>
+        <visual>
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0" />
+        <geometry>
+            <mesh
+            filename="package://swerve_drive_description/meshes/wheel_link.STL" />
+        </geometry>
+        <material
+            name="">
+            <color
+            rgba="0.75294 0.75294 0.75294 1" />
+        </material>
+        </visual>
+        <collision>
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0" />
+        <geometry>
+            <mesh
+            filename="package://swerve_drive_description/meshes/wheel_link.STL" />
+        </geometry>
+        </collision>
+    </link>
+    <joint
+        name="${side}wheel_joint"
+        type="continuous">
+        <origin
+            xyz="0 0.00047482 -0.07"
+            rpy="0 0 0" />
+        <parent
+            link="${side}swerve_link" />
+        <child
+            link="${side}wheel_link" />
+        <axis
+            xyz="0 1 0" />
+        <limit
+            effort="100"
+            velocity="12.7" />
+    </joint>
+    <xacro:wheel_transmission side="${side}"/>
+    <xacro:wheel_gazebo side="${side}"/>
+  </xacro:macro>
+</robot>

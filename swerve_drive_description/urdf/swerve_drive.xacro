@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<robot name="swerve_drive" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.xacro" />
+  <xacro:include filename="$(find swerve_drive_description)/urdf/swerve_drive.gazebo.xacro" />
+  <link name="base_footprint"/>
+  <joint name="base_joint " type="fixed">
+    <origin
+      xyz="0 0 0.0485"
+      rpy="0 0 0" />
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+  </joint>
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.073441 0.0048344 0.14539"
+        rpy="0 0 0" />
+      <mass
+        value="9.9142" />
+      <inertia
+        ixx="0.21521"
+        ixy="-0.001446"
+        ixz="-0.00010869"
+        iyy="0.11841"
+        iyz="5.4379E-05"
+        izz="0.31271" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://swerve_drive_description/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://swerve_drive_description/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <xacro:swerve_wheel side="lf_"  parent="base_link">
+    <origin xyz="0.24858 0.17929 0.096509" rpy="0 0 0" />
+  </xacro:swerve_wheel>
+
+  <xacro:swerve_wheel side="rf_"  parent="base_link">
+    <origin xyz="0.24858 -0.18071 0.096509" rpy="0 0 0" />
+  </xacro:swerve_wheel>
+
+  <xacro:swerve_wheel side="rr_"  parent="base_link">
+    <origin xyz="-0.28642 -0.18071 0.096509" rpy="0 0 0" />
+  </xacro:swerve_wheel>
+
+  <xacro:swerve_wheel side="lr_"  parent="base_link">
+    <origin xyz="-0.28642 0.17929 0.096509" rpy="0 0 0" />
+  </xacro:swerve_wheel>
+
+</robot>

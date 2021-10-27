@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- parses the transmission tags and loads the appropriate hardware interfaces and controller manager -->
+    
+  <xacro:macro name="wheel_transmission" params="side">
+
+    <!-- all joint transmission -->
+    <transmission name="${side}swerve_joint_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}swerve_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${side}swerve_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="${side}wheel_joint_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${side}wheel_joint">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${side}wheel_joint_motor">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+  </xacro:macro>
+</robot>

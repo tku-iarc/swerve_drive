@@ -1,0 +1,12 @@
+<launch>
+  <arg name="id_list" default="[1, 2]"/>
+  <arg name="pos_list" default="[1]"/>
+  <arg name="vel_list" default="[2]"/>
+  <!-- Start a node for each axis, copy this -->
+  <rosparam param="id_list" subst_value="True">$(arg id_list)</rosparam>
+  <rosparam param="pos_list" subst_value="True">$(arg pos_list)</rosparam>
+  <rosparam param="vel_list" subst_value="True">$(arg vel_list)</rosparam>
+
+  <node name="maxon_epos2" pkg="maxon_epos2" type="maxon_epos2_node" output="screen" />
+  
+</launch>
