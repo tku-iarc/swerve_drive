@@ -1,3 +1,4 @@
+#include <cmath>
 #include "vehicle_controller/vehicle_controller.h"
 
 namespace vehicle_controller
@@ -95,9 +96,9 @@ void VehicleController::joysticMsgCallback(const sensor_msgs::Joy::ConstPtr& msg
 {
     if(msg->axes[5] > -0.9)
         return;
-    kinematics_data_.direction_cmd[0] = msg->axes[1];
-    kinematics_data_.direction_cmd[1] = msg->axes[0];
-    kinematics_data_.angular_velocity_cmd = msg->axes[3];
+    kinematics_data_.direction_cmd[0] = (msg->axes[1] > 0.1) ? msg->axes[1] - 0.1 : (msg->axes[1] < -0.1) ? msg->axes[1] + 0.1 : 0;
+    kinematics_data_.direction_cmd[1] = (msg->axes[0] > 0.1) ? msg->axes[0] - 0.1 : (msg->axes[0] < -0.1) ? msg->axes[0] + 0.1 : 0;
+    kinematics_data_.angular_velocity_cmd = (msg->axes[3] > 0.1) ? msg->axes[3] - 0.1 : (msg->axes[3] < -0.1) ? msg->axes[3] + 0.1 : 0;
     this->ensureCmdLimit();
     kinematics.inverseKinematics(kinematics_data_);
 
@@ -133,9 +134,10 @@ void VehicleController::vehicleOdometer(ros::Rate& loop_rate)
 {
     kinematics.forwardKinematics(kinematics_data_);
     double cycle_time = loop_rate.expectedCycleTime().toSec();
-    kinematics_data_.position[0] += kinematics_data_.direction[0] * cycle_time;
-    kinematics_data_.position[1] += kinematics_data_.direction[1] * cycle_time;
     kinematics_data_.rotation += kinematics_data_.angular_velocity * cycle_time;
+    kinematics_data_.rotation += (kinematics_data_.rotation > M_PI) ? -2 * M_PI : (kinematics_data_.rotation < -1 * M_PI) ? 2 * M_PI : 0;
+    kinematics_data_.position[0] += cos(kinematics_data_.rotation) * kinematics_data_.direction[0] * cycle_time;
+    kinematics_data_.position[1] += cos(kinematics_data_.rotation) * kinematics_data_.direction[1] * cycle_time;
 }
 
 void VehicleController::vehicleStatePublish()

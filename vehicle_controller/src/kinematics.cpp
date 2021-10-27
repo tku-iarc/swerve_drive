@@ -57,7 +57,7 @@ bool VehicleKinematics::forwardKinematics(KinematicsData &kinematics_data)
     for(auto it=kinematics_data.wheel_data.begin(); it!=kinematics_data.wheel_data.end(); it++)
     {
         dir_x += it->second.direction[0] + ang_vel * it->second.pos_on_vehicle[1];
-        dir_y += it->second.direction[1] + ang_vel * it->second.pos_on_vehicle[0];
+        dir_y += it->second.direction[1] - ang_vel * it->second.pos_on_vehicle[0];
         dir_cnt += 1;
     }
     kinematics_data.angular_velocity = ang_vel;

@@ -136,7 +136,7 @@ void WheelController::statePublish()
 {
     wheel_controller::WheelDirection state;
     state.wheel_name = wheel_name_;
-    state.dir_x = (joint_data[0]->joint_angle_ >= 0) ? cos(joint_data[0]->joint_angle_) : -1 * cos(joint_data[0]->joint_angle_);
+    state.dir_x = cos(joint_data[0]->joint_angle_); //(joint_data[0]->joint_angle_ >= 0) ? cos(joint_data[0]->joint_angle_) : -1 * cos(joint_data[0]->joint_angle_);
     state.dir_x *= radsTometers(joint_data[1]->velocity_);
     state.dir_y = sin(joint_data[0]->joint_angle_) * radsTometers(joint_data[1]->velocity_);
     wheel_state_pub_.publish(state);
