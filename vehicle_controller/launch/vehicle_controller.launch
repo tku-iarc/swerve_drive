@@ -1,7 +1,7 @@
 <launch>
     <arg name="sim"         default="false"/>
-    <arg name="dir_acc_max" default="1"/>
-    <arg name="ang_acc_max" default="1"/>
+    <arg name="dir_acc_max" default="0.01"/>
+    <arg name="ang_acc_max" default="0.01"/>
 
     <group ns="lf_wheel">
         <include file="$(find wheel_controller)/launch/wheel_control.launch">

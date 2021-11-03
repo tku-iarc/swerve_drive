@@ -4,6 +4,9 @@
 #include <vehicle_controller/VehicleState.h>
 #include <vehicle_controller/Calibration.h>
 #include <std_msgs/Float64MultiArray.h>
+#include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
+#include <tf/transform_broadcaster.h>
 #include <sensor_msgs/Joy.h>
 #include <wheel_controller/WheelDirection.h>
 #include "vehicle_controller/kinematics.h"
@@ -33,7 +36,9 @@ private:
     ros::Subscriber cmd_sub_;
     ros::Subscriber joy_sub;
     ros::Publisher state_pub_;
+    ros::Publisher odom_pub_;
     ros::ServiceServer calib_server_;
+    tf::TransformBroadcaster odom_broadcaster_;
     std::vector<std::string> wheels_name_;
     std::map<std::string, ros::Subscriber> wheels_sub_;
     std::map<std::string, ros::Publisher> wheels_pub_;

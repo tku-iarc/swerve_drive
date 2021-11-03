@@ -41,38 +41,40 @@ WheelController::~WheelController()
 void WheelController::jointDataInit(int swerve_id, int wheel_id, double swerve_gear_ratio, double wheel_gear_ratio)
 {
     joint_data.push_back(new JointData());
-    joint_data[0]->id_           = swerve_id;
-    joint_data[0]->control_mode_ = 0;
-    joint_data[0]->joint_name_   = "swerve_joint";
-    joint_data[0]->joint_angle_  = 0;
-    joint_data[0]->min_angle_    = -1 * DBL_MAX;
-    joint_data[0]->max_angle_    = DBL_MAX;
-    joint_data[0]->max_velocity_ = 0.567 * 2 * M_PI * 0.9;
-    joint_data[0]->velocity_     = 0;
-    joint_data[0]->acceleration_ = 0;
-    joint_data[0]->deceleration_ = 0;
-    joint_data[0]->angle_cmd_    = 0;
-    joint_data[0]->velocity_cmd_ = 0;
-    joint_data[0]->effort_       = 0;
-    joint_data[0]->home_offset_  = 0;
-    joint_data[0]->gear_ratio_   = swerve_gear_ratio;
+    joint_data[0]->id_             = swerve_id;
+    joint_data[0]->control_mode_   = 0;
+    joint_data[0]->joint_name_     = "swerve_joint";
+    joint_data[0]->joint_position_ = 0;
+    joint_data[0]->joint_angle_    = 0;
+    joint_data[0]->min_angle_      = -1 * DBL_MAX;
+    joint_data[0]->max_angle_      = DBL_MAX;
+    joint_data[0]->max_velocity_   = 0.567 * 2 * M_PI * 0.9;
+    joint_data[0]->velocity_       = 0;
+    joint_data[0]->acceleration_   = 0;
+    joint_data[0]->deceleration_   = 0;
+    joint_data[0]->angle_cmd_      = 0;
+    joint_data[0]->velocity_cmd_   = 0;
+    joint_data[0]->effort_         = 0;
+    joint_data[0]->home_offset_    = 0;
+    joint_data[0]->gear_ratio_     = swerve_gear_ratio;
 
     joint_data.push_back(new JointData());
-    joint_data[1]->id_           = wheel_id;
-    joint_data[0]->control_mode_ = 1;
-    joint_data[1]->joint_name_   = "wheel_joint";
-    joint_data[1]->joint_angle_  = 0;
-    joint_data[1]->min_angle_    = -1 * DBL_MAX;
-    joint_data[1]->max_angle_    = DBL_MAX;
-    joint_data[1]->max_velocity_ = (2.67 - 0.42)* 2 * M_PI * 0.9;
-    joint_data[1]->velocity_     = 0;
-    joint_data[1]->acceleration_ = 0;
-    joint_data[1]->deceleration_ = 0;
-    joint_data[1]->angle_cmd_    = 0;
-    joint_data[1]->velocity_cmd_ = 0;
-    joint_data[1]->effort_       = 0;
-    joint_data[1]->home_offset_  = 0;
-    joint_data[1]->gear_ratio_   = wheel_gear_ratio;
+    joint_data[1]->id_             = wheel_id;
+    joint_data[0]->control_mode_   = 1;
+    joint_data[1]->joint_name_     = "wheel_joint";
+    joint_data[1]->joint_position_ = 0;
+    joint_data[1]->joint_angle_    = 0;
+    joint_data[1]->min_angle_      = -1 * DBL_MAX;
+    joint_data[1]->max_angle_      = DBL_MAX;
+    joint_data[1]->max_velocity_   = (2.67 - 0.42)* 2 * M_PI * 0.9;
+    joint_data[1]->velocity_       = 0;
+    joint_data[1]->acceleration_   = 0;
+    joint_data[1]->deceleration_   = 0;
+    joint_data[1]->angle_cmd_      = 0;
+    joint_data[1]->velocity_cmd_   = 0;
+    joint_data[1]->effort_         = 0;
+    joint_data[1]->home_offset_    = 0;
+    joint_data[1]->gear_ratio_     = wheel_gear_ratio;
 }
 
 void WheelController::jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg)
@@ -84,6 +86,7 @@ void WheelController::jointStateCallback(const sensor_msgs::JointState::ConstPtr
         {
             if(msg->name[i].find("swerve") != std::string::npos)
             {
+                joint_data[0]->joint_position_ = msg->position[i];
                 joint_data[0]->joint_angle_ = fmod(msg->position[i], 2 * M_PI);
                 if(joint_data[0]->joint_angle_ > M_PI)
                     joint_data[0]->joint_angle_ -= 2 * M_PI;
@@ -93,6 +96,7 @@ void WheelController::jointStateCallback(const sensor_msgs::JointState::ConstPtr
             }
             else if(msg->name[i].find("wheel") != std::string::npos)
             {
+                joint_data[1]->joint_position_ = msg->position[i];
                 joint_data[1]->joint_angle_ = fmod(msg->position[i], 2 *M_PI);
                 if(joint_data[1]->joint_angle_ > M_PI)
                     joint_data[1]->joint_angle_ -= 2 * M_PI;
@@ -110,10 +114,18 @@ void WheelController::wheelCmdCallback(const wheel_controller::WheelDirection::C
     double wheel_velocity = metersToRads(sqrt(msg->dir_x*msg->dir_x + msg->dir_y*msg->dir_y));
     double dis_angle = (fabs(swerve_angle - joint_data[0]->joint_angle_) > M_PI) ? 
         2 * M_PI - fabs(swerve_angle - joint_data[0]->joint_angle_) : fabs(swerve_angle - joint_data[0]->joint_angle_);
+    double tmp_angle = swerve_angle;
     if(dis_angle > M_PI / 2)
     {
         swerve_angle += (swerve_angle > 0) ? -1 * M_PI : M_PI;
         wheel_velocity *= -1;
+    }
+    if(sim_)
+    {
+        dis_angle = swerve_angle - joint_data[0]->joint_angle_;
+        if(fabs(dis_angle) > M_PI)
+            dis_angle += (dis_angle > 0) ? -2 * M_PI : 2 * M_PI;
+        swerve_angle = joint_data[0]->joint_position_ + dis_angle;
     }
     std_msgs::Float64 cmd;
     cmd.data = swerve_angle;

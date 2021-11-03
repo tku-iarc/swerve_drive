@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   sensor_msgs
+  nav_msgs
+  tf
   message_generation
 )
 
@@ -106,7 +108,7 @@ generate_messages(
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES vehicle_controller
- CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs
+ CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs nav_msgs tf
  DEPENDS system_lib message_runtime
 )
 

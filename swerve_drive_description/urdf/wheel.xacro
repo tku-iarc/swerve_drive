@@ -110,7 +110,7 @@
         <axis
             xyz="0 1 0" />
         <limit
-            effort="100"
+            effort="0.3"
             velocity="12.7" />
     </joint>
     <xacro:wheel_transmission side="${side}"/>
