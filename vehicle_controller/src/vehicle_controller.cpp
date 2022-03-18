@@ -11,6 +11,7 @@ VehicleController::VehicleController(ros::NodeHandle& nodeHandle)
     cmd_sub_ = nodeHandle_.subscribe("vehicle/cmd", 1, &VehicleController::vehicleCmdCallback, this);
     joy_sub = nodeHandle_.subscribe("joy", 1, &VehicleController::joysticMsgCallback, this);
     state_pub_ = nodeHandle_.advertise<vehicle_controller::VehicleState>("vehicle/state", 1);
+    odom_pub_ = nodeHandle_.advertise<nav_msgs::Odometry>("vehicle/odom", 1);
     calib_server_ = nodeHandle_.advertiseService("vehicle/calibration", &VehicleController::calibrationCallback, this);
     
     nodeHandle_.getParam("vehicle_controller/wheel_data/wheels_name", wheels_name_);
@@ -95,11 +96,19 @@ void VehicleController::vehicleCmdCallback(const vehicle_controller::VehicleCmd:
 void VehicleController::joysticMsgCallback(const sensor_msgs::Joy::ConstPtr& msg)
 {
     if(msg->axes[5] > -0.9)
-        return;
-    kinematics_data_.direction_cmd[0] = (msg->axes[1] > 0.1) ? msg->axes[1] - 0.1 : (msg->axes[1] < -0.1) ? msg->axes[1] + 0.1 : 0;
-    kinematics_data_.direction_cmd[1] = (msg->axes[0] > 0.1) ? msg->axes[0] - 0.1 : (msg->axes[0] < -0.1) ? msg->axes[0] + 0.1 : 0;
-    kinematics_data_.angular_velocity_cmd = (msg->axes[3] > 0.1) ? msg->axes[3] - 0.1 : (msg->axes[3] < -0.1) ? msg->axes[3] + 0.1 : 0;
-    this->ensureCmdLimit();
+    {
+        kinematics_data_.direction_cmd[0] = 0;
+        kinematics_data_.direction_cmd[1] = 0;
+        kinematics_data_.angular_velocity_cmd = 0;
+    }
+    else
+    {
+        kinematics_data_.direction_cmd[0] = (msg->axes[1] > 0.1) ? msg->axes[1] - 0.1 : (msg->axes[1] < -0.1) ? msg->axes[1] + 0.1 : 0;
+        kinematics_data_.direction_cmd[1] = (msg->axes[0] > 0.1) ? msg->axes[0] - 0.1 : (msg->axes[0] < -0.1) ? msg->axes[0] + 0.1 : 0;
+        kinematics_data_.angular_velocity_cmd = (msg->axes[3] > 0.1) ? msg->axes[3] - 0.1 : (msg->axes[3] < -0.1) ? msg->axes[3] + 0.1 : 0;
+        this->ensureCmdLimit();
+    }
+    
     kinematics.inverseKinematics(kinematics_data_);
 
     for(auto it=kinematics_data_.wheel_data.begin(); it!=kinematics_data_.wheel_data.end(); it++)
@@ -136,12 +145,15 @@ void VehicleController::vehicleOdometer(ros::Rate& loop_rate)
     double cycle_time = loop_rate.expectedCycleTime().toSec();
     kinematics_data_.rotation += kinematics_data_.angular_velocity * cycle_time;
     kinematics_data_.rotation += (kinematics_data_.rotation > M_PI) ? -2 * M_PI : (kinematics_data_.rotation < -1 * M_PI) ? 2 * M_PI : 0;
-    kinematics_data_.position[0] += cos(kinematics_data_.rotation) * kinematics_data_.direction[0] * cycle_time;
-    kinematics_data_.position[1] += cos(kinematics_data_.rotation) * kinematics_data_.direction[1] * cycle_time;
+    kinematics_data_.position[0] += (cos(kinematics_data_.rotation) * kinematics_data_.direction[0] * cycle_time
+                                     - sin(kinematics_data_.rotation) * kinematics_data_.direction[1] * cycle_time);
+    kinematics_data_.position[1] += (cos(kinematics_data_.rotation) * kinematics_data_.direction[1] * cycle_time
+                                     + sin(kinematics_data_.rotation) * kinematics_data_.direction[0] * cycle_time);
 }
 
 void VehicleController::vehicleStatePublish()
 {
+    ros::Time curr_time = ros::Time::now();
     vehicle_controller::VehicleState state;
     state.vel_x = kinematics_data_.direction[0];
     state.vel_y = kinematics_data_.direction[1];
@@ -150,6 +162,38 @@ void VehicleController::vehicleStatePublish()
     state.pos_y = kinematics_data_.position[1];
     state.pos_r = kinematics_data_.rotation;
     state_pub_.publish(state);
+
+    geometry_msgs::TransformStamped odom_trans;
+    geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(kinematics_data_.rotation);
+    odom_trans.header.stamp = curr_time;
+    odom_trans.header.frame_id = "odom";
+    odom_trans.child_frame_id = "base_link";
+
+    odom_trans.transform.translation.x = kinematics_data_.position[0];
+    odom_trans.transform.translation.y = kinematics_data_.position[1];
+    odom_trans.transform.translation.z = 0.0;
+    odom_trans.transform.rotation = odom_quat;
+    odom_broadcaster_.sendTransform(odom_trans);
+
+    nav_msgs::Odometry odom;
+    odom.header.stamp = curr_time;
+    odom.header.frame_id = "odom";
+
+    //set the position
+    odom.pose.pose.position.x = kinematics_data_.position[0];
+    odom.pose.pose.position.y = kinematics_data_.position[1];
+    odom.pose.pose.position.z = 0.0;
+    odom.pose.pose.orientation = odom_quat;
+
+    //set the velocity
+    odom.child_frame_id = "base_link";
+    odom.twist.twist.linear.x = kinematics_data_.direction[0];
+    odom.twist.twist.linear.y = kinematics_data_.direction[1];
+    odom.twist.twist.angular.z = kinematics_data_.angular_velocity;
+
+    //publish the message
+    odom_pub_.publish(odom);
+
 }
 
 void VehicleController::process(ros::Rate& loop_rate)

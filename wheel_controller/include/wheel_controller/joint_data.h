@@ -10,6 +10,7 @@ public:
     int id_;
     int control_mode_;
     std::string joint_name_;
+    double joint_position_;
     double joint_angle_;
     double min_angle_;
     double max_angle_;

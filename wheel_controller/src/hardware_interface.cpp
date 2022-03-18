@@ -100,6 +100,7 @@ void SwerveDriveInterface::motorStatesCallback(const maxon_epos2::MotorStates::C
                 {
                     jd_ptr[j]->joint_angle_ = msg->motor_states[i].pos * jd_ptr[j]->gear_ratio_;
                     jd_ptr[j]->velocity_ = msg->motor_states[i].vel * jd_ptr[j]->gear_ratio_;
+                    jd_ptr[j]->joint_position_ = jd_ptr[j]->joint_angle_;
                 }
                 else
                     jd_ptr[j]->velocity_ = msg->motor_states[i].vel * jd_ptr[j]->gear_ratio_;
