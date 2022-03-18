@@ -33,6 +33,7 @@ int main(int argc, char** argv)
 	epos_controller = new maxon_epos2::EposController(nodeHandle);
 	while (ros::ok()){
 		ros::spinOnce();
+        // ros::Time begin = ros::Time::now();
         if(epos_controller->deviceOpenedCheck() == false)
             continue;
         for(auto it = pos_list.begin(); it != pos_list.end(); ++it)
@@ -50,6 +51,8 @@ int main(int argc, char** argv)
         for(auto it = vel_list.begin(); it != vel_list.end(); ++it)
             epos_controller->readVelocity(*it);
         epos_controller->motorStatesPublisher();
+        // ros::Time end = ros::Time::now();
+        // std::cout<<"while time = "<<(end - begin).toSec() * 1000<<std::endl;
 	}
 	spinner.stop();
 	return 0;

@@ -103,9 +103,9 @@ void VehicleController::joysticMsgCallback(const sensor_msgs::Joy::ConstPtr& msg
     }
     else
     {
-        kinematics_data_.direction_cmd[0] = (msg->axes[1] > 0.1) ? msg->axes[1] - 0.1 : (msg->axes[1] < -0.1) ? msg->axes[1] + 0.1 : 0;
-        kinematics_data_.direction_cmd[1] = (msg->axes[0] > 0.1) ? msg->axes[0] - 0.1 : (msg->axes[0] < -0.1) ? msg->axes[0] + 0.1 : 0;
-        kinematics_data_.angular_velocity_cmd = (msg->axes[3] > 0.1) ? msg->axes[3] - 0.1 : (msg->axes[3] < -0.1) ? msg->axes[3] + 0.1 : 0;
+        kinematics_data_.direction_cmd[0] = (msg->axes[1] > 0.2) ? msg->axes[1] - 0.2 : (msg->axes[1] < -0.2) ? msg->axes[1] + 0.2 : 0;
+        kinematics_data_.direction_cmd[1] = (msg->axes[0] > 0.2) ? msg->axes[0] - 0.2 : (msg->axes[0] < -0.2) ? msg->axes[0] + 0.2 : 0;
+        kinematics_data_.angular_velocity_cmd = (msg->axes[3] > 0.2) ? msg->axes[3] - 0.2 : (msg->axes[3] < -0.2) ? msg->axes[3] + 0.2 : 0;
         this->ensureCmdLimit();
     }
     
