@@ -39,6 +39,7 @@ private:
     ros::Publisher  swerve_joint_pub_;
     ros::Publisher  wheel_joint_pub_;
     std::string wheel_name_;
+    bool wheel_reverse_;
     bool sim_;
 
 public:

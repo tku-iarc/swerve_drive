@@ -2,13 +2,15 @@
     <arg name="sim"         default="false"/>
     <arg name="dir_acc_max" default="0.01"/>
     <arg name="ang_acc_max" default="0.01"/>
+    <arg name="wheel_reverse" default="false"/>
 
     <group ns="lf_wheel">
         <include file="$(find wheel_controller)/launch/wheel_control.launch">
-            <arg name="sim"          value="$(arg sim)"/>
-            <arg name="wheel_name"   value="lf_wheel"/>
-            <arg name="swerve_id"    value="1"/>
-            <arg name="wheel_id"     value="2"/>
+            <arg name="sim"           value="$(arg sim)"/>
+            <arg name="wheel_name"    value="lf_wheel"/>
+            <arg name="swerve_id"     value="1"/>
+            <arg name="wheel_id"      value="2"/>
+            <arg name="wheel_reverse" value="true" unless="$(arg sim)"/>
         </include>
     </group>
     <group ns="rf_wheel">
@@ -33,6 +35,7 @@
             <arg name="wheel_name"   value="lr_wheel"/>
             <arg name="swerve_id"    value="7"/>
             <arg name="wheel_id"     value="8"/>
+            <arg name="wheel_reverse" value="true" unless="$(arg sim)"/>
         </include>
     </group>
 

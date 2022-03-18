@@ -15,7 +15,7 @@ WheelController::WheelController(ros::NodeHandle& nodeHandle)
 
     wheel_state = Disable;
     jointDataInit(swerve_id, wheel_id, swerve_gear_ratio, wheel_gear_ratio);
-
+    wheel_reverse_ = nh_private.param<bool>("wheel_reverse", false);
     sim_ = nh_private.param<bool>("sim", false);
     if(!sim_)
     {
@@ -130,7 +130,7 @@ void WheelController::wheelCmdCallback(const wheel_controller::WheelDirection::C
     std_msgs::Float64 cmd;
     cmd.data = swerve_angle;
     swerve_joint_pub_.publish(cmd);
-    cmd.data = wheel_velocity;
+    cmd.data = (wheel_reverse_) ? wheel_velocity * -1 : wheel_velocity;
     wheel_joint_pub_.publish(cmd);
 }
 
@@ -171,6 +171,8 @@ void WheelController::process(ros::Rate& loop_rate)
         }
         rate.sleep();
     }
+    if(wheel_reverse_)
+        joint_data[0]->velocity_ *= -1;
     wheel_cm->update(ros::Time::now(), loop_rate.expectedCycleTime());
     swerve_drive_interface->writeVelocity(loop_rate.expectedCycleTime());
     return;
