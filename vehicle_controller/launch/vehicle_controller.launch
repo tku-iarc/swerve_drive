@@ -1,8 +1,17 @@
 <launch>
-    <arg name="sim"         default="false"/>
-    <arg name="dir_acc_max" default="0.01"/>
-    <arg name="ang_acc_max" default="0.01"/>
+    <arg name="sim"           default="false"/>
     <arg name="wheel_reverse" default="false"/>
+    <arg name="dir_acc_max"   default="1"/>
+    <arg name="ang_acc_max"   default="1"/>
+    <arg name="id_list"       default="[1, 2, 3, 4, 5, 6, 7, 8]"/>
+    <arg name="pos_list"      default="[1, 3, 5, 7]"/>
+    <arg name="vel_list"      default="[2, 4, 6, 8]"/>
+
+    <include file="$(find maxon_epos2)/launch/maxon_epos2.launch" unless="$(arg sim)">
+        <arg name="id_list"          value="$(arg id_list)"/>
+        <arg name="pos_list"         value="$(arg pos_list)"/>
+        <arg name="vel_list"         value="$(arg vel_list)"/>
+    </include>
 
     <group ns="lf_wheel">
         <include file="$(find wheel_controller)/launch/wheel_control.launch">

@@ -1,7 +1,7 @@
 <launch>
   <arg name="wheel_name"    default="wheel"/>
   <arg name="control_mode"  default="velocity"/>
-  <arg name="sample_rate"   default="12"/>
+  <arg name="sample_rate"   default="8"/>
   <arg name="swerve_id"     default="1"/>
   <arg name="wheel_id"      default="2"/>
   <arg name="wheel_reverse" default="false"/>

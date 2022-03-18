@@ -1,6 +1,6 @@
 #include <cmath>
 #include "vehicle_controller/vehicle_controller.h"
-
+#define JOY_SPEED 0.3  //0~1
 namespace vehicle_controller
 {
 VehicleController::VehicleController(ros::NodeHandle& nodeHandle)
@@ -115,8 +115,8 @@ void VehicleController::joysticMsgCallback(const sensor_msgs::Joy::ConstPtr& msg
     {
         wheel_controller::WheelDirection wheel_dir;
         wheel_dir.wheel_name = it->first;
-        wheel_dir.dir_x = it->second.direction_cmd[0];
-        wheel_dir.dir_y = it->second.direction_cmd[1];
+        wheel_dir.dir_x = it->second.direction_cmd[0] * JOY_SPEED;
+        wheel_dir.dir_y = it->second.direction_cmd[1] * JOY_SPEED;
         wheels_pub_[it->first].publish(wheel_dir);
     }
 }
