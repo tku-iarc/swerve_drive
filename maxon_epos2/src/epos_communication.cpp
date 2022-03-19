@@ -941,7 +941,6 @@ int EposCommunication::getPosition(unsigned short p_usNodeId, double* pPositionI
 		lResult = MMC_FAILED;
 		LogError("VCS_GetPositionIs", lResult, ulErrorCode, p_usNodeId);
 	}
-
 	*pPositionIs = countsToRads(pPositionIsCounts);
 
 	//only for Debugging
@@ -979,11 +978,13 @@ void EposCommunication::resetHomePoseition(unsigned short p_usNodeId)
 	lResult = VCS_GetPositionIs(p_DeviceHandle, p_usNodeId, &moto_pos, &ulErrorCode);
 	lResult = VCS_SetPositionMust(p_DeviceHandle, p_usNodeId, moto_pos, &ulErrorCode);
 	lResult = VCS_ActivateHomingMode(p_DeviceHandle, p_usNodeId, &ulErrorCode);
-	int home_pos;
-	if(moto_pos > 0)
-		home_pos = moto_pos - radsToCounts(2 * M_PI / swerve_gear_ratio);
-	else
-		home_pos = radsToCounts(2 * M_PI / swerve_gear_ratio) - moto_pos;
+	
+	int pos_of_2pi = radsToCounts(2 * M_PI / swerve_gear_ratio);
+	int home_pos = fmod(moto_pos, pos_of_2pi);
+	// if(moto_pos > 0)
+	// 	home_pos = moto_pos - radsToCounts(2 * M_PI / swerve_gear_ratio);
+	// else
+	// 	home_pos = radsToCounts(2 * M_PI / swerve_gear_ratio) - moto_pos;
 	lResult = VCS_DefinePosition(p_DeviceHandle, p_usNodeId, home_pos, &ulErrorCode);
 	lResult = VCS_ActivatePositionMode(p_DeviceHandle, p_usNodeId, &ulErrorCode);
 	if(lResult == MMC_FAILED)
@@ -1004,7 +1005,7 @@ int EposCommunication::closeDevice(){
 }
 
 double EposCommunication::countsToRads(const int& counts){
-	double mm = 2 * M_PI * (counts) / 2048. / (103275.0/3211.0);
+	double mm = 2 * M_PI * double(counts) / 2048. / (103275.0/3211.0);
 	return mm;
 }
 
@@ -1024,7 +1025,7 @@ int EposCommunication::radsToRpm(const double& rads)
 double EposCommunication::rpmToRads(const int& rpm)
 {
 	double rads;
-	rads = (rpm) / (103275.0/3211.0) / 60. * (2 * M_PI);
+	rads = double(rpm) / (103275.0/3211.0) / 60. * (2 * M_PI);
 	return rads;
 }
 

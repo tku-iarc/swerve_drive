@@ -42,14 +42,22 @@ int main(int argc, char** argv)
         {
             epos_controller->readPosition(*it);
             epos_controller->readVelocity(*it);
+            if(epos_controller->homeResetCheck(*it))
+            {
+                epos_controller->readPosition(*it);
+                epos_controller->readVelocity(*it);
+            }
         }
         for(int i=0; i<vel_list.size(); i++)
         {
             double cmd = epos_controller->getCmd(vel_list[i]) - (epos_controller->getVel(pos_list[i]) * 0.1566416);
             epos_controller->writeVelocity(vel_list[i], cmd);
+            epos_controller->setVel(vel_list[i], cmd);  // this is because velocity given by hall sensor is not credible
         }
-        for(auto it = vel_list.begin(); it != vel_list.end(); ++it)
-            epos_controller->readVelocity(*it);
+        // for(auto it = vel_list.begin(); it != vel_list.end(); ++it)
+        // {
+        //      epos_controller->readVelocity(*it);
+        // }
         epos_controller->motorStatesPublisher();
         // ros::Time end = ros::Time::now();
         // std::cout<<"while time = "<<(end - begin).toSec() * 1000<<std::endl;

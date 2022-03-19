@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+#include <cmath>
 #include "wheel_controller/hardware_interface.h"
 
 namespace hardware_interface
@@ -98,9 +99,13 @@ void SwerveDriveInterface::motorStatesCallback(const maxon_epos2::MotorStates::C
                 
                 if(j == 0)
                 {
-                    jd_ptr[j]->joint_angle_ = msg->motor_states[i].pos * jd_ptr[j]->gear_ratio_;
+                    jd_ptr[j]->joint_position_ = msg->motor_states[i].pos * jd_ptr[j]->gear_ratio_;
                     jd_ptr[j]->velocity_ = msg->motor_states[i].vel * jd_ptr[j]->gear_ratio_;
-                    jd_ptr[j]->joint_position_ = jd_ptr[j]->joint_angle_;
+                    jd_ptr[j]->joint_angle_ = fmod(jd_ptr[j]->joint_position_, 2 *M_PI);
+                    if(jd_ptr[j]->joint_angle_ > M_PI)
+                        jd_ptr[j]->joint_angle_ -= 2 * M_PI;
+                    else if (jd_ptr[j]->joint_angle_ < -1 * M_PI)
+                        jd_ptr[j]->joint_angle_ += 2 * M_PI;
                 }
                 else
                     jd_ptr[j]->velocity_ = msg->motor_states[i].vel * jd_ptr[j]->gear_ratio_;

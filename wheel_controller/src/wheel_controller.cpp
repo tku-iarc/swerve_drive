@@ -114,19 +114,18 @@ void WheelController::wheelCmdCallback(const wheel_controller::WheelDirection::C
     double wheel_velocity = metersToRads(sqrt(msg->dir_x*msg->dir_x + msg->dir_y*msg->dir_y));
     double dis_angle = (fabs(swerve_angle - joint_data[0]->joint_angle_) > M_PI) ? 
         2 * M_PI - fabs(swerve_angle - joint_data[0]->joint_angle_) : fabs(swerve_angle - joint_data[0]->joint_angle_);
-    double tmp_angle = swerve_angle;
     if(dis_angle > M_PI / 2)
     {
         swerve_angle += (swerve_angle > 0) ? -1 * M_PI : M_PI;
         wheel_velocity *= -1;
+        
     }
-    if(sim_)
-    {
-        dis_angle = swerve_angle - joint_data[0]->joint_angle_;
-        if(fabs(dis_angle) > M_PI)
-            dis_angle += (dis_angle > 0) ? -2 * M_PI : 2 * M_PI;
-        swerve_angle = joint_data[0]->joint_position_ + dis_angle;
-    }
+    
+    dis_angle = swerve_angle - joint_data[0]->joint_angle_;
+    if(fabs(dis_angle) > M_PI)
+        dis_angle += (dis_angle > 0) ? -2 * M_PI : 2 * M_PI;
+    swerve_angle = joint_data[0]->joint_position_ + dis_angle;
+
     std_msgs::Float64 cmd;
     cmd.data = swerve_angle;
     swerve_joint_pub_.publish(cmd);

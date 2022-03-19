@@ -171,8 +171,11 @@ bool EposController::writePosition(int id, double& cmd, double offset)
 
 bool EposController::writePosition(int id)
 {
-	if(fabs(cmd[id] - pos[id]) > (M_PI / swerve_gear_ratio))
-		epos_device_.resetHomePoseition(id);
+	if(fabs(cmd[id] - pos[id]) > (2 * M_PI / swerve_gear_ratio))
+	{
+		ROS_WARN("Ignore position command cause too big");
+		return true;
+	}
 	if(epos_device_.setPositionMust(id, cmd[id])==MMC_FAILED)
 	{
 		ROS_ERROR("Seting position failed");
@@ -183,7 +186,6 @@ bool EposController::writePosition(int id)
 
 bool EposController::writeProfilePosition(int id, double& cmd, double& vel, double offset)
 {
-
 	if(epos_device_.setPositionProfile(id, vel, 4 * vel, 4 * vel)==MMC_FAILED)
 	{
 		ROS_ERROR_STREAM("Seting position profile failed, vel = "<<vel);
@@ -194,6 +196,17 @@ bool EposController::writeProfilePosition(int id, double& cmd, double& vel, doub
 		ROS_ERROR("Seting position failed");
 		return false;
 	}
+	return true;
+}
+
+bool EposController::homeResetCheck(int id)
+{
+	if(fabs(pos[id]) > SAFE_POS && fabs(vel[id]) < 0.0001)
+	{
+		epos_device_.resetHomePoseition(id);
+		return true;
+	}
+	return false;
 }
 
 void EposController::setMotorCmd(int id, double& cmd)
