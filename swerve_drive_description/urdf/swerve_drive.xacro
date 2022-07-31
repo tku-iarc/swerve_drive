@@ -32,7 +32,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://swerve_drive_description/meshes/base_link.STL" />
+          filename="file://$(find swerve_drive_description)/meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -46,7 +46,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://swerve_drive_description/meshes/base_link.STL" />
+          filename="file://$(find swerve_drive_description)/meshes/base_link.STL" />
       </geometry>
     </collision>
   </link>

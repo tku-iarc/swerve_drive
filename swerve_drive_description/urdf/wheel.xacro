@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.gazebo.xacro" />
-  <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.transmission.xacro" />
   <xacro:macro name="swerve_wheel" params="side parent *origin">
     <link
         name="${side}swerve_link">
@@ -25,7 +24,7 @@
             rpy="0 0 0" />
         <geometry>
             <mesh
-            filename="package://swerve_drive_description/meshes/swerve_link.STL" />
+                filename="file://$(find swerve_drive_description)/meshes/swerve_link.STL" />
         </geometry>
         <material
             name="">
@@ -39,7 +38,7 @@
             rpy="0 0 0" />
         <geometry>
             <mesh
-            filename="package://swerve_drive_description/meshes/swerve_link.STL" />
+                filename="file://$(find swerve_drive_description)/meshes/swerve_link.STL" />
         </geometry>
         </collision>
     </link>
@@ -79,7 +78,7 @@
             rpy="0 0 0" />
         <geometry>
             <mesh
-            filename="package://swerve_drive_description/meshes/wheel_link.STL" />
+                filename="file://$(find swerve_drive_description)/meshes/wheel_link.STL" />
         </geometry>
         <material
             name="">
@@ -93,7 +92,7 @@
             rpy="0 0 0" />
         <geometry>
             <mesh
-            filename="package://swerve_drive_description/meshes/wheel_link.STL" />
+                filename="file://$(find swerve_drive_description)/meshes/wheel_link.STL" />
         </geometry>
         </collision>
     </link>
@@ -113,7 +112,6 @@
             effort="0.3"
             velocity="12.7" />
     </joint>
-    <xacro:wheel_transmission side="${side}"/>
     <xacro:wheel_gazebo side="${side}"/>
   </xacro:macro>
 </robot>
