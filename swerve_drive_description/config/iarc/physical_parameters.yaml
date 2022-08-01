@@ -1,0 +1,105 @@
+joints:
+  lf:
+    origin:
+      x: 0.24858
+      y: 0.17929
+      z: 0.096509
+      roll: 0
+      pitch: 0
+      yaw: 0
+    axis:
+      x: 0
+      y: 0
+      z: 1
+  rf:
+    origin:
+      x: 0.24858
+      y: -0.18071
+      z: 0.096509
+      roll: 0
+      pitch: 0
+      yaw: 0
+    axis:
+      x: 0
+      y: 0
+      z: 1
+  rr:
+    origin:
+      x: -0.28642
+      y: -0.18071
+      z: 0.096509
+      roll: 0
+      pitch: 0
+      yaw: 0
+    axis:
+      x: 0
+      y: 0
+      z: 1
+  lr:
+    origin:
+      x: -0.28642
+      y: 0.17929
+      z: 0.096509
+      roll: 0
+      pitch: 0
+      yaw: 0
+    axis:
+      x: 0
+      y: 0
+      z: 1
+  wheel:
+    origin:
+      x: 0
+      y: 0.00047482
+      z: -0.07
+      roll: 0
+      pitch: 0
+      yaw: 0
+    axis:
+      x: 0
+      y: 1
+      z: 0
+
+links:
+  base:
+    inertial:
+      origin:
+        x: -0.073441
+        y: 0.0048344
+        z: 0.14539
+        roll: 0
+        pitch: 0
+        yaw: 0
+      mass: 50
+      inertia:
+        xx: 1
+        yy: 1
+        zz: 1
+  swerve:
+    inertial:
+      origin:
+        x: 0
+        y: 0.003953
+        z: -0.024575
+        roll: 0
+        pitch: 0
+        yaw: 0
+      mass: 1
+      inertia:
+        xx: 0.01
+        yy: 0.01
+        zz: 0.01
+  wheel:
+    inertial:
+      origin:
+        x: 0
+        y: 0
+        z: 0
+        roll: 0
+        pitch: 0
+        yaw: 0
+      mass: 1
+      inertia:
+        xx: 0.01
+        yy: 0.01
+        zz: 0.01

@@ -1,57 +1,69 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.gazebo.xacro" />
-  <xacro:macro name="swerve_wheel" params="side parent *origin">
+  <xacro:macro name="swerve_wheel" params="side parent  mesh_files swerve_joint wheel_joint links">
+
+    <xacro:property name="sjo" value="${swerve_joint['origin']}" />
+    <xacro:property name="sja" value="${swerve_joint['axis']}" />
+    <xacro:property name="wjo" value="${wheel_joint['origin']}" />
+    <xacro:property name="wja" value="${wheel_joint['axis']}" />
+    <xacro:property name="sio" value="${links['swerve']['inertial']['origin']}" />
+    <xacro:property name="sii" value="${links['swerve']['inertial']['inertia']}" />
+    <xacro:property name="wio" value="${links['wheel']['inertial']['origin']}" />
+    <xacro:property name="wii" value="${links['wheel']['inertial']['inertia']}" />
+    
     <link
         name="${side}swerve_link">
         <inertial>
-        <origin
-            xyz="-6.5343E-06 0.003953 -0.024575"
-            rpy="0 0 0" />
-        <mass
-            value="1" />
-        <inertia
-            ixx="0.01"
-            ixy="0"
-            ixz="0"
-            iyy="0.01"
-            iyz="0"
-            izz="0.01" />
+            <origin
+                xyz="${sio['x']} ${sio['y']} ${sio['z']}"
+                rpy="${sio['roll']} ${sio['pitch']} ${sio['yaw']}" />
+            <mass
+                value="${links['swerve']['inertial']['mass']}" />
+            <inertia
+                ixx="${sii['xx']}"
+                ixy="0"
+                ixz="0"
+                iyy="${sii['yy']}"
+                iyz="0"
+                izz="${sii['zz']}" />
         </inertial>
         <visual>
-        <origin
-            xyz="0 0 0"
-            rpy="0 0 0" />
-        <geometry>
-            <mesh
-                filename="file://$(find swerve_drive_description)/meshes/swerve_link.STL" />
-        </geometry>
-        <material
-            name="">
-            <color
-            rgba="0.75294 0.75294 0.75294 1" />
-        </material>
+            <origin
+                xyz="0 0 0"
+                rpy="0 0 0" />
+            <geometry>
+                <mesh
+                    filename="file://$(find ${mesh_files['package']})/${mesh_files['swerve']['visual']['path']}" />
+            </geometry>
+            <material
+                name="">
+                <color
+                rgba="0.75294 0.75294 0.75294 1" />
+            </material>
         </visual>
         <collision>
-        <origin
-            xyz="0 0 0"
-            rpy="0 0 0" />
-        <geometry>
-            <mesh
-                filename="file://$(find swerve_drive_description)/meshes/swerve_link.STL" />
-        </geometry>
+            <origin
+                xyz="0 0 0"
+                rpy="0 0 0" />
+            <geometry>
+                <mesh
+                    filename="file://$(find ${mesh_files['package']})/${mesh_files['swerve']['collision']['path']}" />
+            </geometry>
         </collision>
     </link>
     <joint
         name="${side}swerve_joint"
         type="continuous">
-        <xacro:insert_block name="origin" />
+        <origin
+            xyz="${sjo['x']} ${sjo['y']} ${sjo['z']}"
+            rpy="${sjo['roll']} ${sjo['pitch']} ${sjo['yaw']}" />
         <parent
             link="${parent}" />
         <child
             link="${side}swerve_link" />
         <axis
-            xyz="0 0 1" />
+            xyz="${sja['x']} ${sja['y']} ${sja['z']}" />
         <limit
             effort="100"
             velocity="3.2" />
@@ -59,55 +71,55 @@
     <link
         name="${side}wheel_link">
         <inertial>
-        <origin
-            xyz="-1.1437E-05 -4.8244E-06 -7.4559E-06"
-            rpy="0 0 0" />
-        <mass
-            value="1" />
-        <inertia
-            ixx="0.01"
-            ixy="0"
-            ixz="0"
-            iyy="0.01"
-            iyz="0"
-            izz="0.01" />
+            <origin
+                xyz="${wio['x']} ${wio['y']} ${wio['z']}"
+                rpy="${wio['roll']} ${wio['pitch']} ${wio['yaw']}" />
+            <mass
+                value="${links['swerve']['inertial']['mass']}" />
+            <inertia
+                ixx="${wii['xx']}"
+                ixy="0"
+                ixz="0"
+                iyy="${wii['yy']}"
+                iyz="0"
+                izz="${wii['zz']}" />
         </inertial>
         <visual>
-        <origin
-            xyz="0 0 0"
-            rpy="0 0 0" />
-        <geometry>
-            <mesh
-                filename="file://$(find swerve_drive_description)/meshes/wheel_link.STL" />
-        </geometry>
-        <material
-            name="">
-            <color
-            rgba="0.75294 0.75294 0.75294 1" />
-        </material>
+            <origin
+                xyz="0 0 0"
+                rpy="0 0 0" />
+            <geometry>
+                <mesh
+                    filename="file://$(find ${mesh_files['package']})/${mesh_files['wheel']['visual']['path']}" />
+            </geometry>
+            <material
+                name="">
+                <color
+                rgba="0.75294 0.75294 0.75294 1" />
+            </material>
         </visual>
         <collision>
-        <origin
-            xyz="0 0 0"
-            rpy="0 0 0" />
-        <geometry>
-            <mesh
-                filename="file://$(find swerve_drive_description)/meshes/wheel_link.STL" />
-        </geometry>
+            <origin
+                xyz="0 0 0"
+                rpy="0 0 0" />
+            <geometry>
+                <mesh
+                    filename="file://$(find ${mesh_files['package']})/${mesh_files['wheel']['collision']['path']}" />
+            </geometry>
         </collision>
     </link>
     <joint
         name="${side}wheel_joint"
         type="continuous">
         <origin
-            xyz="0 0.00047482 -0.07"
-            rpy="0 0 0" />
+            xyz="${wjo['x']} ${wjo['y']} ${wjo['z']}"
+            rpy="${wjo['roll']} ${wjo['pitch']} ${wjo['yaw']}" />
         <parent
             link="${side}swerve_link" />
         <child
             link="${side}wheel_link" />
         <axis
-            xyz="0 1 0" />
+            xyz="${wja['x']} ${wja['y']} ${wja['z']}" />
         <limit
             effort="0.3"
             velocity="12.7" />

@@ -1,0 +1,20 @@
+mesh_files:
+  package: swerve_drive_description
+
+  base:
+    visual:
+      path: meshes/iarc/base_link.STL
+    collision:
+      path: meshes/iarc/base_link.STL
+
+  swerve:
+    visual:
+      path: meshes/iarc/swerve_link.STL
+    collision:
+      path: meshes/iarc/swerve_link.STL
+
+  wheel:
+    visual:
+      path: meshes/iarc/wheel_link.STL
+    collision:
+      path: meshes/iarc/wheel_link.STL

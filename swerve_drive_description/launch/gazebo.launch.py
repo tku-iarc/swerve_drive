@@ -34,6 +34,17 @@ def launch_setup(context, *args, **kwargs):
             PathJoinSubstitution(
                 [FindPackageShare(description_package), "urdf", description_file]
             ),
+            " ",
+            "robot_type:=",
+            "yhs_fw01",
+            " ",
+            "name:=",
+            "swerve_drive"
+            " ",
+            "prefix:=",
+            prefix,
+            " ",
+
         ]
     )
     robot_description = {"robot_description": robot_description_content}
