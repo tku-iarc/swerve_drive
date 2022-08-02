@@ -16,21 +16,19 @@
   <xacro:property name="links_info" value="${config_physical_parameters['links']}" />
   <xacro:property name="bio" value="${links_info['base']['inertial']['origin']}" />
   <xacro:property name="bii" value="${links_info['base']['inertial']['inertia']}" />
+  <xacro:property name="jbo" value="${joints_info['base']['origin']}" />
 
   <link name="base_footprint"/>
   <joint name="base_joint " type="fixed">
     <origin
-      xyz="0 0 0.0485"
-      rpy="0 0 0" />
+      xyz="${jbo['x']} ${jbo['y']} ${jbo['z']}"
+      rpy="${jbo['roll']} ${jbo['pitch']} ${jbo['yaw']}" />
     <parent link="base_footprint"/>
     <child link="base_link"/>
   </joint>
   <link
     name="base_link">
     <inertial>
-      <!-- <origin
-        xyz="-0.073441 0.0048344 0.14539"
-        rpy="0 0 0" /> -->
       <origin
         xyz="${bio['x']} ${bio['y']} ${bio['z']}"
         rpy="${bio['roll']} ${bio['pitch']} ${bio['yaw']}" />
