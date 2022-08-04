@@ -27,7 +27,7 @@ WheelController::WheelController(ros::NodeHandle& nodeHandle)
         joint_state_sub_ = nodeHandle_.subscribe("/joint_states" , 1, &WheelController::jointStateCallback, this);
     }
     wheel_cmd_sub_ = nodeHandle_.subscribe("wheel_cmd", 16, &WheelController::wheelCmdCallback, this);
-    wheel_state_pub_ = nodeHandle_.advertise<wheel_controller::WheelDirection>("wheel_state", 1);
+    wheel_state_pub_ = nodeHandle_.advertise<mobile_base_msgs::msg::WheelDirection>("wheel_state", 1);
 	swerve_joint_pub_ = nodeHandle_.advertise<std_msgs::Float64>("swerve_controller/command", 1);
     wheel_joint_pub_ = nodeHandle_.advertise<std_msgs::Float64>("wheel_controller/command", 1);
 }
@@ -77,7 +77,7 @@ void WheelController::jointDataInit(int swerve_id, int wheel_id, double swerve_g
     joint_data[1]->gear_ratio_     = wheel_gear_ratio;
 }
 
-void WheelController::jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg)
+void WheelController::jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr msg)
 {
     std::string token_self = wheel_name_.substr(0, wheel_name_.find("_"));
     for(int i=0; i<msg->name.size(); i++)
@@ -108,7 +108,7 @@ void WheelController::jointStateCallback(const sensor_msgs::JointState::ConstPtr
     }
 }
 
-void WheelController::wheelCmdCallback(const wheel_controller::WheelDirection::ConstPtr& msg)
+void WheelController::wheelCmdCallback(const mobile_base_msgs::msg::WheelDirection::SharedPtr msg)
 {
     double swerve_angle = atan2(msg->dir_y, msg->dir_x);
     double wheel_velocity = metersToRads(sqrt(msg->dir_x*msg->dir_x + msg->dir_y*msg->dir_y));
@@ -146,7 +146,7 @@ double WheelController::radsTometers(const double &rads)
 
 void WheelController::statePublish()
 {
-    wheel_controller::WheelDirection state;
+    mobile_base_msgs::msg::WheelDirection state;
     state.wheel_name = wheel_name_;
     state.dir_x = cos(joint_data[0]->joint_angle_); //(joint_data[0]->joint_angle_ >= 0) ? cos(joint_data[0]->joint_angle_) : -1 * cos(joint_data[0]->joint_angle_);
     state.dir_x *= radsTometers(joint_data[1]->velocity_);

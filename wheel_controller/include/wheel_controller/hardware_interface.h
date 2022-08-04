@@ -7,8 +7,8 @@
 #include <joint_limits_interface/joint_limits.h>
 #include <joint_limits_interface/joint_limits_urdf.h>
 #include <joint_limits_interface/joint_limits_rosparam.h>
-#include "maxon_epos2/MotorCmds.h"
-#include "maxon_epos2/MotorStates.h"
+#include "mobile_base_msgs/msg/MotorCmds.h"
+#include "mobile_base_msgs/msg/MotorStates.h"
 #include "wheel_controller/joint_data.h"
 
 
@@ -28,7 +28,7 @@ private:
   template <typename JointInterface>
   void initJointInterface(JointInterface& jnt_interface);
   void checkCmdLimit(int cmd_indx);
-  void motorStatesCallback(const maxon_epos2::MotorStates::ConstPtr& msg);
+  void motorStatesCallback(const mobile_base_msgs::msg::MotorStates::SharedPtr msg);
   hardware_interface::JointStateInterface jnt_state_interface;
   hardware_interface::PositionJointInterface jnt_pos_interface;
   hardware_interface::VelocityJointInterface jnt_vel_interface;

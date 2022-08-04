@@ -1,14 +1,14 @@
 #pragma once
 #include <ros/ros.h>
-#include <vehicle_controller/VehicleCmd.h>
-#include <vehicle_controller/VehicleState.h>
-#include <vehicle_controller/Calibration.h>
-#include <std_msgs/Float64MultiArray.h>
-#include <geometry_msgs/Twist.h>
-#include <nav_msgs/Odometry.h>
+#include <mobile_base_msgs/msg/VehicleCmd.hpp>
+#include <mobile_base_msgs/msg/VehicleState.hpp>
+#include <mobile_base_msgs/srv/Calibration.hpp>
+#include <std_msgs/msg/Float64MultiArray.hpp>
+#include <geometry_msgs/msg/Twist.hpp>
+#include <nav_msgs/msg/Odometry.h>
 #include <tf/transform_broadcaster.h>
-#include <sensor_msgs/Joy.h>
-#include <wheel_controller/WheelDirection.h>
+#include <sensor_msgs/msg/Joy.hpp>
+#include "mobile_base_msgs/msg/WheelDirection.hpp"
 #include "vehicle_controller/kinematics.h"
 
 namespace vehicle_controller
@@ -20,11 +20,11 @@ public:
     ~VehicleController();
     void process(ros::Rate& loop_rate);
 private:
-    bool calibrationCallback(vehicle_controller::Calibration::Request &req, 
-                             vehicle_controller::Calibration::Response &res);
-    void vehicleCmdCallback(const vehicle_controller::VehicleCmd::ConstPtr& cmd);
-    void joysticMsgCallback(const sensor_msgs::Joy::ConstPtr& msg);
-    void wheelStateCallback(const wheel_controller::WheelDirection::ConstPtr& state);
+    bool calibrationCallback(const std::shared_ptr<mobile_base_msgs::srv::Calibration::Request> req, 
+                             std::shared_ptr<mobile_base_msgs::srv::Calibration::Response> res);
+    void vehicleCmdCallback(const mobile_base_msgs::msg::VehicleCmd::SharedPtr cmd);
+    void joysticMsgCallback(const sensor_msgs::msg::Joy::SharedPtr msg);
+    void wheelStateCallback(const wheel_controller::msg::WheelDirection::SharedPtr state);
     void initKinematicsData();
     void ensureCmdLimit();
     void vehicleOdometer(ros::Rate& loop_rate);

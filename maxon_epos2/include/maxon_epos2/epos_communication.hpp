@@ -39,7 +39,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <cmath>
 #include <unistd.h>
 #include <list>
@@ -65,12 +65,12 @@ class EposCommunication
    */
   virtual ~EposCommunication();
 
-  int 	initialization(std::vector<int> nodeIdList, int motors);
+  int 	initialization(std::vector<unsigned short> nodeIdList, int motors);
   bool 	deviceOpenedCheck();
   int 	homing(unsigned short p_usNodeId, bool refind=false);
   int   homingSuccess(unsigned short p_usNodeId);
-  int 	startPositionMode(std::vector<int> id_list);
-  int   startVolicityMode(std::vector<int> id_list);
+  int 	startPositionMode(std::vector<unsigned short> id_list);
+  int   startVolicityMode(std::vector<unsigned short> id_list);
   int   setHomingParameter(unsigned short p_usNodeId, unsigned int p_Velocity);
   int   setPositionProfile(unsigned short p_usNodeId,
                            double profile_velocity,
@@ -118,7 +118,7 @@ class EposCommunication
   void  SeparatorLine();
   void  PrintHeader();
   void  PrintSettings();
-  void  SetDefaultParameters(std::vector<int> nodeIdList , int motors);
+  void  SetDefaultParameters(std::vector<unsigned short> nodeIdList , int motors);
   int	  SetPositionProfile(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int* p_pErrorCode,
                            unsigned int profile_velocity,
 										       unsigned int profile_acceleration,

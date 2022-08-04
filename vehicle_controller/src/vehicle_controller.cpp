@@ -10,7 +10,7 @@ VehicleController::VehicleController(ros::NodeHandle& nodeHandle)
     nodeHandle_.param<float>("ang_acc_max", ang_acc_max_, 1);
     cmd_sub_ = nodeHandle_.subscribe("vehicle/cmd", 1, &VehicleController::vehicleCmdCallback, this);
     joy_sub = nodeHandle_.subscribe("joy", 1, &VehicleController::joysticMsgCallback, this);
-    state_pub_ = nodeHandle_.advertise<vehicle_controller::VehicleState>("vehicle/state", 1);
+    state_pub_ = nodeHandle_.advertise<mobile_base_msgs::msg::VehicleState>("vehicle/state", 1);
     odom_pub_ = nodeHandle_.advertise<nav_msgs::Odometry>("vehicle/odom", 1);
     calib_server_ = nodeHandle_.advertiseService("vehicle/calibration", &VehicleController::calibrationCallback, this);
     
@@ -18,7 +18,7 @@ VehicleController::VehicleController(ros::NodeHandle& nodeHandle)
 
     for(auto it=wheels_name_.begin(); it!=wheels_name_.end(); ++it)
     {
-        ros::Publisher wheel_pub = nodeHandle_.advertise<wheel_controller::WheelDirection>(*it + "/wheel_cmd", 8);
+        ros::Publisher wheel_pub = nodeHandle_.advertise<mobile_base_msgs::msg::WheelDirection>(*it + "/wheel_cmd", 8);
         ros::Subscriber wheel_sub = nodeHandle_.subscribe(*it + "/wheel_state", 8, &VehicleController::wheelStateCallback, this);
         wheels_pub_.insert(std::pair<std::string, ros::Publisher>(*it, wheel_pub));
         wheels_sub_.insert(std::pair<std::string, ros::Subscriber>(*it, wheel_sub));
@@ -59,8 +59,8 @@ void VehicleController::initKinematicsData()
     }
 }
 
-bool VehicleController::calibrationCallback(vehicle_controller::Calibration::Request &req, 
-                                            vehicle_controller::Calibration::Response &res)
+bool VehicleController::calibrationCallback(const std::shared_ptr<mobile_base_msgs::srv::Calibration::Request> req, 
+                                            std::shared_ptr<mobile_base_msgs::srv::Calibration::Response> res)
 {
     kinematics_data_.position[0] = req.pos_x;
     kinematics_data_.position[1] = req.pos_y;
@@ -69,13 +69,13 @@ bool VehicleController::calibrationCallback(vehicle_controller::Calibration::Req
     return true;
 }
 
-void VehicleController::wheelStateCallback(const wheel_controller::WheelDirection::ConstPtr& state)
+void VehicleController::wheelStateCallback(const mobile_base_msgs::msg::WheelDirection::SharedPtr state)
 {
     kinematics_data_.wheel_data[state->wheel_name].direction[0] = state->dir_x;
     kinematics_data_.wheel_data[state->wheel_name].direction[1] = state->dir_y;
 }
 
-void VehicleController::vehicleCmdCallback(const vehicle_controller::VehicleCmd::ConstPtr& cmd)
+void VehicleController::vehicleCmdCallback(const mobile_base_msgs::msg::VehicleCmd::SharedPtr cmd)
 {
     kinematics_data_.direction_cmd[0] = cmd->vel_x;
     kinematics_data_.direction_cmd[1] = cmd->vel_y;
@@ -85,7 +85,7 @@ void VehicleController::vehicleCmdCallback(const vehicle_controller::VehicleCmd:
 
     for(auto it=kinematics_data_.wheel_data.begin(); it!=kinematics_data_.wheel_data.end(); it++)
     {
-        wheel_controller::WheelDirection wheel_dir;
+        mobile_base_msgs::msg::WheelDirection wheel_dir;
         wheel_dir.wheel_name = it->first;
         wheel_dir.dir_x = it->second.direction_cmd[0];
         wheel_dir.dir_y = it->second.direction_cmd[1];
@@ -93,7 +93,7 @@ void VehicleController::vehicleCmdCallback(const vehicle_controller::VehicleCmd:
     }
 }
 
-void VehicleController::joysticMsgCallback(const sensor_msgs::Joy::ConstPtr& msg)
+void VehicleController::joysticMsgCallback(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
     if(msg->axes[5] > -0.9)
     {
@@ -113,7 +113,7 @@ void VehicleController::joysticMsgCallback(const sensor_msgs::Joy::ConstPtr& msg
 
     for(auto it=kinematics_data_.wheel_data.begin(); it!=kinematics_data_.wheel_data.end(); it++)
     {
-        wheel_controller::WheelDirection wheel_dir;
+        mobile_base_msgs::msg::WheelDirection wheel_dir;
         wheel_dir.wheel_name = it->first;
         wheel_dir.dir_x = it->second.direction_cmd[0] * JOY_SPEED;
         wheel_dir.dir_y = it->second.direction_cmd[1] * JOY_SPEED;
@@ -154,7 +154,7 @@ void VehicleController::vehicleOdometer(ros::Rate& loop_rate)
 void VehicleController::vehicleStatePublish()
 {
     ros::Time curr_time = ros::Time::now();
-    vehicle_controller::VehicleState state;
+    mobile_base_msgs::msg::VehicleState state;
     state.vel_x = kinematics_data_.direction[0];
     state.vel_y = kinematics_data_.direction[1];
     state.vel_r = kinematics_data_.angular_velocity;

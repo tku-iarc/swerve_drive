@@ -21,7 +21,7 @@ SwerveDriveInterface::SwerveDriveInterface(ros::NodeHandle& nodeHandle, std::vec
     initJointInterface(jnt_pos_interface);
     // initJointInterface(jnt_vel_interface);
     motor_states_sub_ = nodeHandle_.subscribe("/motor_states", 1, &SwerveDriveInterface::motorStatesCallback, this);
-	motor_cmds_pub_ = nodeHandle_.advertise<maxon_epos2::MotorCmds>("/motor_cmds", 1);
+	motor_cmds_pub_ = nodeHandle_.advertise<mobile_base_msgs::msg::MotorCmds>("/motor_cmds", 1);
     received_states = false;
 }
 
@@ -72,7 +72,7 @@ bool SwerveDriveInterface::read()
 
 void SwerveDriveInterface::writeVelocity(ros::Duration period)
 {
-    maxon_epos2::MotorCmds cmds;
+    mobile_base_msgs::msg::MotorCmds cmds;
     jnt_vel_limits_interface.enforceLimits(period);
     for (int i=0; i < jd_ptr.size(); i++)
     {
@@ -87,7 +87,7 @@ void SwerveDriveInterface::writeVelocity(ros::Duration period)
     return;
 }
 
-void SwerveDriveInterface::motorStatesCallback(const maxon_epos2::MotorStates::ConstPtr& msg)
+void SwerveDriveInterface::motorStatesCallback(const mobile_base_msgs::msg::MotorStates::SharedPtr msg)
 {
     for(int i=0; i<msg->motor_states.size(); i++)
     {

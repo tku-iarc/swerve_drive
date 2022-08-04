@@ -10,7 +10,7 @@
 #include <std_msgs/Float64MultiArray.h>
 #include <sensor_msgs/JointState.h>
 #include <controller_manager/controller_manager.h>
-#include <wheel_controller/WheelDirection.h>
+#include "mobile_base_msgs/msg/WheelDirection.h"
 #include "wheel_controller/hardware_interface.h"
 #include "wheel_controller/joint_data.h"
 
@@ -45,8 +45,8 @@ private:
 public:
     WheelController(ros::NodeHandle& nodeHandle);
     ~WheelController();
-    void jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
-    void wheelCmdCallback(const wheel_controller::WheelDirection::ConstPtr& msg);
+    void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr msg);
+    void wheelCmdCallback(const mobile_base_msgs::msg::WheelDirection::SharedPtr msg);
     void statePublish();
     void process(ros::Rate& loop_rate);
     std::vector<JointData*> joint_data;

@@ -13,23 +13,26 @@
 // STD
 #include <string>
 #include <cmath>
+// #include <memory>
 
-#include "maxon_epos2/epos_communication.hpp"
-#include "maxon_epos2/MotorCmds.h"
-#include "maxon_epos2/MotorState.h"
-#include "maxon_epos2/MotorStates.h"
 
 // ROS
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
-#include <std_srvs/Trigger.h>
+#include "std_srvs/srv/trigger.hpp"
+
+#include "maxon_epos2/epos_communication.hpp"
+#include "mobile_base_msgs/msg/motor_cmds.hpp"
+#include "mobile_base_msgs/msg/motor_state.hpp"
+#include "mobile_base_msgs/msg/motor_states.hpp"
+
 
 namespace maxon_epos2 {
 
 /*!
  * Main class for the node to handle the ROS interfacing.
  */
-class EposController
+class EposController : public rclcpp::Node
 {
  public:
   // EposController();
@@ -37,7 +40,7 @@ class EposController
    * Constructor.
    * @param nodeHandle the ROS node handle.
    */
-  EposController(ros::NodeHandle& nodeHandle);
+  EposController(std::string& node_name);
 
   /*!
    * Destructor.
@@ -69,11 +72,11 @@ class EposController
   // bool readParameters();
   //! Device object
   EposCommunication epos_device_;
-  void motorCmdsCallback(const maxon_epos2::MotorCmds::ConstPtr& msg);
-  ros::NodeHandle& nodeHandle_;
-
-  ros::Subscriber motor_cmds_sub_;
-  ros::Publisher  motor_states_pub_;
+  void motorCmdsCallback(const mobile_base_msgs::msg::MotorCmds::SharedPtr msg);
+  void mainLoopCallback();
+  rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Subscription<mobile_base_msgs::msg::MotorCmds>::SharedPtr motor_cmds_sub_;
+  rclcpp::Publisher<mobile_base_msgs::msg::MotorStates>::SharedPtr motor_states_pub_;
 
 
   //! Create variable for publishing motor info
@@ -85,6 +88,8 @@ class EposController
   std::map<unsigned short, double> cur;
 
   std::vector<unsigned short> id_list_;
+  std::vector<unsigned short> pos_list_;
+  std::vector<unsigned short> vel_list_;
   int motors;
   double swerve_gear_ratio;
 };
