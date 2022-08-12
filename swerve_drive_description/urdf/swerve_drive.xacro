@@ -2,6 +2,7 @@
 <robot name="$(arg name)" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.xacro" />
   <xacro:include filename="$(find swerve_drive_description)/urdf/swerve_drive.gazebo.xacro" />
+  <xacro:include filename="$(find swerve_drive_description)/urdf/swerve_drive.ros2_control.xacro" />
 
   <xacro:arg name="robot_type" default=""/>
   <xacro:arg name="name" default="" />
@@ -67,21 +68,19 @@
     </collision>
   </link>
 
-  <xacro:property name="lfj" value="${joints_info['lf']}" />
-  <xacro:property name="rfj" value="${joints_info['rf']}" />
-  <xacro:property name="rrj" value="${joints_info['rr']}" />
-  <xacro:property name="lrj" value="${joints_info['lr']}" />
+  <xacro:property name="swerve_joint" value="${joints_info['swerve']}" />
+  <xacro:property name="wheel_joint" value="${joints_info['wheel']}" />
 
   <xacro:swerve_wheel
-    side="lf_"  parent="base_link" mesh_files="${mesh_files}" swerve_joint="${lfj}" 
-    wheel_joint="${joints_info['wheel']}" links="${links_info}" />
+    side="lf_"  parent="base_link" mesh_files="${mesh_files}" swerve_joint="${swerve_joint['lf']}" 
+    wheel_joint="${wheel_joint['lf']}" links="${links_info}" />
   <xacro:swerve_wheel
-    side="rf_"  parent="base_link" mesh_files="${mesh_files}" swerve_joint="${rfj}" 
-    wheel_joint="${joints_info['wheel']}" links="${links_info}" />
+    side="rf_"  parent="base_link" mesh_files="${mesh_files}" swerve_joint="${swerve_joint['rf']}" 
+    wheel_joint="${wheel_joint['rf']}" links="${links_info}" />
   <xacro:swerve_wheel
-    side="rr_"  parent="base_link" mesh_files="${mesh_files}" swerve_joint="${rrj}" 
-    wheel_joint="${joints_info['wheel']}" links="${links_info}" />
+    side="rr_"  parent="base_link" mesh_files="${mesh_files}" swerve_joint="${swerve_joint['rr']}" 
+    wheel_joint="${wheel_joint['rr']}" links="${links_info}" />
   <xacro:swerve_wheel
-    side="lr_"  parent="base_link" mesh_files="${mesh_files}" swerve_joint="${lrj}" 
-    wheel_joint="${joints_info['wheel']}" links="${links_info}" />
+    side="lr_"  parent="base_link" mesh_files="${mesh_files}" swerve_joint="${swerve_joint['lr']}" 
+    wheel_joint="${wheel_joint['lr']}" links="${links_info}" />
 </robot>

@@ -13,6 +13,7 @@ typedef double Double2[2];
 typedef struct 
 {
 public:
+    std::vector<std::string> joints_name;
     std::string wheel_name;
     Double2     direction;
     Double2     direction_cmd;

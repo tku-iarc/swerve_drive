@@ -22,6 +22,7 @@ def launch_setup(context, *args, **kwargs):
     prefix = LaunchConfiguration("prefix")
     start_joint_controller = LaunchConfiguration("start_joint_controller")
     namespace = LaunchConfiguration("namespace")
+    robot_type = LaunchConfiguration("robot_type")
 
     initial_joint_controllers = PathJoinSubstitution(
         [FindPackageShare(runtime_config_package), "config", controllers_file]
@@ -36,7 +37,7 @@ def launch_setup(context, *args, **kwargs):
             ),
             " ",
             "robot_type:=",
-            "yhs_fw01",
+            robot_type,
             " ",
             "name:=",
             "swerve_drive"
@@ -177,7 +178,19 @@ def generate_launch_description():
     )
 
     declared_arguments.append(
-        DeclareLaunchArgument("namespace", default_value="", description="Namespace for node")
+        DeclareLaunchArgument(
+            "robot_type",
+            default_value="yhs_fw01",
+            description="mobile base type",
+        )
+    )
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "namespace",
+            default_value="",
+            description="Namespace for node"
+        )
     )
 
     return LaunchDescription(declared_arguments + [OpaqueFunction(function=launch_setup)])

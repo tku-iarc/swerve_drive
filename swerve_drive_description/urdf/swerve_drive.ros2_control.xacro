@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot name="swerve_drive" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.ros2_control.xacro" />
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+        <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <xacro:wheel_ros2_control side="lf_" swerve_id="0" wheel_id="1"/>
+    <xacro:wheel_ros2_control side="rf_" swerve_id="2" wheel_id="3"/>
+    <xacro:wheel_ros2_control side="rr_" swerve_id="4" wheel_id="5"/>
+    <xacro:wheel_ros2_control side="lr_" swerve_id="6" wheel_id="7"/>
+  </ros2_control>
+</robot>
+

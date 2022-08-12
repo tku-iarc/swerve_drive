@@ -63,6 +63,7 @@ bool VehicleKinematics::forwardKinematics(KinematicsData &kinematics_data)
     kinematics_data.angular_velocity = ang_vel;
     kinematics_data.direction[0] = dir_x / dir_cnt;
     kinematics_data.direction[1] = dir_y / dir_cnt;
+    return true;
 }
 
 bool VehicleKinematics::inverseKinematics(KinematicsData &kinematics_data)
@@ -74,6 +75,7 @@ bool VehicleKinematics::inverseKinematics(KinematicsData &kinematics_data)
         for(int i=0; i<2; i++)
             it->second.direction_cmd[i] = kinematics_data.direction_cmd[i] + wheel_direction[i];
     }
+    return true;
 }
 
 void VehicleKinematics::angularVelocityToDirection(const double &ang_vel, const Double2 &pos_on_vehicle, Double2 &direction)

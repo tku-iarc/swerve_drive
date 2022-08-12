@@ -2,20 +2,24 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <!-- parses the transmission tags and loads the appropriate hardware interfaces and controller manager -->
     
-  <xacro:macro name="wheel_transmission" params="side">
+  <xacro:macro name="wheel_ros2_control" params="side swerve_id wheel_id">
     <joint name="${side}swerve_joint">
         <command_interface name="position">
         </command_interface>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
+        <param name="motor_id">${swerve_id}</param>
+        <param name="mechanical_reduction">1</param>
     </joint>
     <joint name="${side}wheel_joint">
         <command_interface name="velocity">
-            <param name="min">-1</param>
-            <param name="max">1</param>
+            <param name="min">0</param>
+            <param name="max">0</param>
         </command_interface>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
+        <param name="motor_id">${wheel_id}</param>
+        <param name="mechanical_reduction">1</param>
     </joint>
   </xacro:macro>
 </robot>

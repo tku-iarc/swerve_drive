@@ -32,7 +32,9 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include)
+include_directories(
+  include
+)
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}_core SHARED
@@ -46,6 +48,7 @@ target_include_directories(${PROJECT_NAME}_core
 target_link_libraries(${PROJECT_NAME}_core
   EposCmd
 )
+
 ament_target_dependencies(${PROJECT_NAME}_core ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 add_executable(${PROJECT_NAME}_node
@@ -53,11 +56,15 @@ add_executable(${PROJECT_NAME}_node
 )
 
 target_include_directories(${PROJECT_NAME}_node
-PUBLIC
+  PRIVATE
     include
 )
 target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}_core
+)
+
+install(TARGETS ${PROJECT_NAME}_core
+        RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 install(TARGETS ${PROJECT_NAME}_node
@@ -72,5 +79,5 @@ install(DIRECTORY launch
 
 ament_export_include_directories(include)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
-ament_export_libraries(${PROJECT_NAME})
+ament_export_libraries(${PROJECT_NAME}_core)
 ament_package()

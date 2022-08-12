@@ -28,67 +28,67 @@ wheel_controller:
       - lr_wheel_joint
     interface_name: velocity
     open_loop_control: false
-    has_acceleration_limits: true
-    max_acceleration: 0
-    has_velocity_limits: true
-    max_velocity: 0
-    joint_limits:
-      has_acceleration_limits: true
-      max_acceleration: 0
-      has_velocity_limits: true
-      max_velocity: 0
+#     has_acceleration_limits: true
+#     max_acceleration: 0
+#     has_velocity_limits: true
+#     max_velocity: 0
+#     joint_limits:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
 
-joint_limits:
-  ros__parameters:
-    lf_swerve_joint:
-      has_acceleration_limits: true
-      max_acceleration: 0
-      has_velocity_limits: true
-      max_velocity: 0
-    lf_wheel_joint:
-      has_acceleration_limits: true
-      max_acceleration: 0
-      has_velocity_limits: true
-      max_velocity: 0
-    rf_swerve_joint:
-      has_acceleration_limits: true
-      max_acceleration: 0
-      has_velocity_limits: true
-      max_velocity: 0
-    rf_wheel_joint:
-      has_acceleration_limits: true
-      max_acceleration: 0
-      has_velocity_limits: true
-      max_velocity: 0
-    rr_swerve_joint:
-      has_acceleration_limits: true
-      max_acceleration: 0
-      has_velocity_limits: true
-      max_velocity: 0
-    rr_wheel_joint:
-      has_acceleration_limits: true
-      max_acceleration: 0
-      has_velocity_limits: true
-      max_velocity: 0
-    lr_swerve_joint:
-      has_acceleration_limits: true
-      max_acceleration: 0
-      has_velocity_limits: true
-      max_velocity: 0
-    lr_wheel_joint:
-      has_acceleration_limits: true
-      max_acceleration: 0
-      has_velocity_limits: true
-      max_velocity: 0
+# joint_limits:
+#   ros__parameters:
+#     lf_swerve_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     lf_wheel_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     rf_swerve_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     rf_wheel_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     rr_swerve_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     rr_wheel_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     lr_swerve_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     lr_wheel_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
 
-gazebo_ros2_control:
-  ros__parameters:
-    pid_gains:
-      rf_swerve_joint: {p: 0.0, i: 0.0, d: 0.05}
-      rr_swerve_joint: {p: 0.0, i: 0.0, d: 0.05}
-      lr_swerve_joint: {p: 0.0, i: 0.0, d: 0.05}
-      lf_swerve_joint: {p: 0.0, i: 0.0, d: 0.05}
-      lf_wheel_joint: {p: 0.0, i: 0.0, d: 0.05}
-      rf_wheel_joint: {p: 0.0, i: 0.0, d: 0.05}
-      rr_wheel_joint: {p: 0.0, i: 0.0, d: 0.05}
-      lr_wheel_joint: {p: 0.0, i: 0.0, d: 0.05}
+# gazebo_ros2_control:
+#   ros__parameters:
+#     pid_gains:
+#       rf_swerve_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       rr_swerve_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       lr_swerve_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       lf_swerve_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       lf_wheel_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       rf_wheel_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       rr_wheel_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       lr_wheel_joint: {p: 0.0, i: 0.0, d: 0.05}

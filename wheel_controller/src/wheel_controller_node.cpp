@@ -1,7 +1,6 @@
 #include <ros/ros.h>
 #include <signal.h>
 #include "wheel_controller/wheel_controller.h"
-#include "maxon_epos2/epos_controller.hpp"
 
 WheelController* controller;
 

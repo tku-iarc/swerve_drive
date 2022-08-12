@@ -9,7 +9,7 @@ for swerve_drive_description robot</p>
   </description>
   <author>Andy Chien</author>
   <maintainer email="TODO@email.com" />
-  <license>BSD</license>
+  <license>MIT</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>

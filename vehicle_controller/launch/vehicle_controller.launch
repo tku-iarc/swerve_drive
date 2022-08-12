@@ -54,7 +54,7 @@
 
     <include file="$(find swerve_drive_description)/launch/gazebo.launch" if="$(arg sim)"/>
 
-    <node pkg="joy" type="joy_node" name="joystick" output="screen">
+    <node pkg="joy_linux" type="joy_linux_node" name="joystick" output="screen">
         <param name="joy_node/dev" value="/dev/input/js0"/>
     </node>
 

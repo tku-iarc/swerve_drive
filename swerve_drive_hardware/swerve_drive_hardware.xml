@@ -1,0 +1,9 @@
+<library path="swerve_drive_hardware">
+  <class name="swerve_drive_hardware/MaxonRosInterface"
+         type="swerve_drive_hardware::MaxonRosInterface"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      The ROS2 Control for a maxon ros controller with multiple command and state interfaces.
+    </description>
+  </class>
+</library>
