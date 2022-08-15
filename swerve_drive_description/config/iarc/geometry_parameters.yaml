@@ -1,20 +1,26 @@
-mesh_files:
+geometry_config:
   package: swerve_drive_description
 
   base:
     visual:
+      origin: {x: 0, y: 0, z: 0, roll: 0, pitch: 0, yaw: 0}
       path: meshes/iarc/base_link.STL
     collision:
+      origin: {x: 0, y: 0, z: 0, roll: 0, pitch: 0, yaw: 0}
       path: meshes/iarc/base_link.STL
 
   swerve:
     visual:
+      origin: {x: 0, y: 0, z: 0, roll: 0, pitch: 0, yaw: 0}
       path: meshes/iarc/swerve_link.STL
     collision:
+      origin: {x: 0, y: 0, z: 0, roll: 0, pitch: 0, yaw: 0}
       path: meshes/iarc/swerve_link.STL
 
   wheel:
     visual:
+      origin: {x: 0, y: 0, z: 0, roll: 0, pitch: 0, yaw: 0}
       path: meshes/iarc/wheel_link.STL
     collision:
+      origin: {x: 0, y: 0, z: 0, roll: 0, pitch: 0, yaw: 0}
       path: meshes/iarc/wheel_link.STL

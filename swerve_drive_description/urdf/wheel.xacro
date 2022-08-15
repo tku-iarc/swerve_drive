@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.gazebo.xacro" />
-  <xacro:macro name="swerve_wheel" params="side parent  mesh_files swerve_joint wheel_joint links">
+  <xacro:macro name="swerve_wheel" params="side parent geometry_config swerve_joint wheel_joint links">
 
     <xacro:property name="sjo" value="${swerve_joint['origin']}" />
     <xacro:property name="sja" value="${swerve_joint['axis']}" />
@@ -11,6 +11,11 @@
     <xacro:property name="sii" value="${links['swerve']['inertial']['inertia']}" />
     <xacro:property name="wio" value="${links['wheel']['inertial']['origin']}" />
     <xacro:property name="wii" value="${links['wheel']['inertial']['inertia']}" />
+    <xacro:property name="svo" value="${geometry_config['swerve']['visual']['origin']}" />
+    <xacro:property name="sco" value="${geometry_config['swerve']['collision']['origin']}" />
+    <xacro:property name="wvo" value="${geometry_config['wheel']['visual']['origin']}" />
+    <xacro:property name="wco" value="${geometry_config['wheel']['collision']['origin']}" />
+
     
     <link
         name="${side}swerve_link">
@@ -30,11 +35,11 @@
         </inertial>
         <visual>
             <origin
-                xyz="0 0 0"
-                rpy="0 0 0" />
+                xyz="${svo['x']} ${svo['y']} ${svo['z']}"
+                rpy="${svo['roll']} ${svo['pitch']} ${svo['yaw']}" />
             <geometry>
                 <mesh
-                    filename="file://$(find ${mesh_files['package']})/${mesh_files['swerve']['visual']['path']}" />
+                    filename="file://$(find ${geometry_config['package']})/${geometry_config['swerve']['visual']['path']}" />
             </geometry>
             <material
                 name="">
@@ -44,11 +49,11 @@
         </visual>
         <collision>
             <origin
-                xyz="0 0 0"
-                rpy="0 0 0" />
+                xyz="${sco['x']} ${sco['y']} ${sco['z']}"
+                rpy="${sco['roll']} ${sco['pitch']} ${sco['yaw']}" />
             <geometry>
                 <mesh
-                    filename="file://$(find ${mesh_files['package']})/${mesh_files['swerve']['collision']['path']}" />
+                    filename="file://$(find ${geometry_config['package']})/${geometry_config['swerve']['collision']['path']}" />
             </geometry>
         </collision>
     </link>
@@ -86,11 +91,11 @@
         </inertial>
         <visual>
             <origin
-                xyz="0 0 0"
-                rpy="0 0 0" />
+                xyz="${wco['x']} ${wco['y']} ${wco['z']}"
+                rpy="${wco['roll']} ${wco['pitch']} ${wco['yaw']}" />
             <geometry>
                 <mesh
-                    filename="file://$(find ${mesh_files['package']})/${mesh_files['wheel']['visual']['path']}" />
+                    filename="file://$(find ${geometry_config['package']})/${geometry_config['wheel']['visual']['path']}" />
             </geometry>
             <material
                 name="">
@@ -100,11 +105,11 @@
         </visual>
         <collision>
             <origin
-                xyz="0 0 0"
-                rpy="0 0 0" />
+                xyz="${wvo['x']} ${wvo['y']} ${wvo['z']}"
+                rpy="${wvo['roll']} ${wvo['pitch']} ${wvo['yaw']}" />
             <geometry>
                 <mesh
-                    filename="file://$(find ${mesh_files['package']})/${mesh_files['wheel']['collision']['path']}" />
+                    filename="file://$(find ${geometry_config['package']})/${geometry_config['wheel']['collision']['path']}" />
             </geometry>
         </collision>
     </link>

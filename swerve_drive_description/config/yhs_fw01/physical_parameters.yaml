@@ -1,32 +1,58 @@
 joints:
   base:
-    origin: {x: 0, y: 0, z: 0.32, roll: 0, pitch: 0, yaw: 0}
+    origin: {x: 0, y: 0, z: 0.44, roll: 0, pitch: 0, yaw: 0}
   swerve:
     lf:
-      origin: {x: 0.23599, y: 0.22433, z: 0, roll: 0, pitch: 0, yaw: !degrees 180}
-      axis: {x: 0, y: 0, z: -1}
+      origin: {x: 0.2, y: 0.21, z: -0.113, roll: 0, pitch: 0, yaw: !degrees 180}
+      axis: {x: 0, y: 0, z: 1}
     rf:
-      origin: {x: 0.23599, y: -0.19567, z: 0, roll: 0, pitch: 0, yaw: 0}
-      axis: {x: 0, y: 0, z: -1}
+      origin: {x: 0.2, y: -0.21, z: -0.113, roll: 0, pitch: 0, yaw: 0}
+      axis: {x: 0, y: 0, z: 1}
     rr:
-      origin: {x: -0.16401, y: -0.19567, z: 0, roll: 0, pitch: 0, yaw: 0}
-      axis: {x: 0, y: 0, z: -1}
+      origin: {x: -0.2, y: -0.21, z: -0.113, roll: 0, pitch: 0, yaw: 0}
+      axis: {x: 0, y: 0, z: 1}
     lr:
-      origin: {x: -0.16401, y: 0.22433, z: 0, roll: 0, pitch: 0, yaw: !degrees 180}
-      axis: {x: 0, y: 0, z: -1}
+      origin: {x: -0.2, y: 0.21, z: -0.113, roll: 0, pitch: 0, yaw: !degrees 180} #13664
+      axis: {x: 0, y: 0, z: 1}
   wheel:
     lf:
-      origin: {x: 0, y: 0, z: -0.2037, roll: 0, pitch: 0, yaw: 0}
+      origin: {x: 0, y: 0, z: -0.207, roll: 0, pitch: 0, yaw: 0}
       axis: {x: 0, y: -1, z: 0}
     rf:
-      origin: {x: 0, y: 0, z: -0.2037, roll: 0, pitch: 0, yaw: 0}
+      origin: {x: 0, y: 0, z: -0.207, roll: 0, pitch: 0, yaw: 0}
       axis: {x: 0, y: 1, z: 0}
     rr:
-      origin: {x: 0, y: 0, z: -0.2037, roll: 0, pitch: 0, yaw: 0}
+      origin: {x: 0, y: 0, z: -0.207, roll: 0, pitch: 0, yaw: 0}
       axis: {x: 0, y: 1, z: 0}
     lr:
-      origin: {x: 0, y: 0, z: -0.2037, roll: 0, pitch: 0, yaw: 0}
+      origin: {x: 0, y: 0, z: -0.207, roll: 0, pitch: 0, yaw: 0}
       axis: {x: 0, y: -1, z: 0}
+  # swerve:
+  #   lf:
+  #     origin: {x: 0.23599, y: 0.22433, z: 0, roll: 0, pitch: 0, yaw: !degrees 180}
+  #     axis: {x: 0, y: 0, z: -1}
+  #   rf:
+  #     origin: {x: 0.23599, y: -0.19567, z: 0, roll: 0, pitch: 0, yaw: 0}
+  #     axis: {x: 0, y: 0, z: -1}
+  #   rr:
+  #     origin: {x: -0.16401, y: -0.19567, z: 0, roll: 0, pitch: 0, yaw: 0}
+  #     axis: {x: 0, y: 0, z: -1}
+  #   lr:
+  #     origin: {x: -0.16401, y: 0.22433, z: 0, roll: 0, pitch: 0, yaw: !degrees 180}
+  #     axis: {x: 0, y: 0, z: -1}
+  # wheel:
+  #   lf:
+  #     origin: {x: 0, y: 0, z: -0.2037, roll: 0, pitch: 0, yaw: 0}
+  #     axis: {x: 0, y: -1, z: 0}
+  #   rf:
+  #     origin: {x: 0, y: 0, z: -0.2037, roll: 0, pitch: 0, yaw: 0}
+  #     axis: {x: 0, y: 1, z: 0}
+  #   rr:
+  #     origin: {x: 0, y: 0, z: -0.2037, roll: 0, pitch: 0, yaw: 0}
+  #     axis: {x: 0, y: 1, z: 0}
+  #   lr:
+  #     origin: {x: 0, y: 0, z: -0.2037, roll: 0, pitch: 0, yaw: 0}
+  #     axis: {x: 0, y: -1, z: 0}
 
 links:
   base:

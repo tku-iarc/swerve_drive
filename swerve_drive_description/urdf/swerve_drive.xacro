@@ -7,16 +7,18 @@
   <xacro:arg name="robot_type" default=""/>
   <xacro:arg name="name" default="" />
   <xacro:arg name="prefix" default="" />
-  <xacro:arg name="visual_parameters_file" default="$(find swerve_drive_description)/config/$(arg robot_type)/visual_parameters.yaml" />
+  <xacro:arg name="geometry_parameters_file" default="$(find swerve_drive_description)/config/$(arg robot_type)/geometry_parameters.yaml" />
   <xacro:arg name="physical_parameters_file" default="$(find swerve_drive_description)/config/$(arg robot_type)/physical_parameters.yaml" />
-  <xacro:property name="config_visual_parameters" value="${load_yaml('$(arg visual_parameters_file)')}" />
+  <xacro:property name="config_geometry_parameters" value="${load_yaml('$(arg geometry_parameters_file)')}" />
   <xacro:property name="config_physical_parameters" value="${load_yaml('$(arg physical_parameters_file)')}" />
   
-  <xacro:property name="mesh_files" value="${config_visual_parameters['mesh_files']}" />
+  <xacro:property name="geometry_config" value="${config_geometry_parameters['geometry_config']}" />
   <xacro:property name="joints_info" value="${config_physical_parameters['joints']}" />
   <xacro:property name="links_info" value="${config_physical_parameters['links']}" />
   <xacro:property name="bio" value="${links_info['base']['inertial']['origin']}" />
   <xacro:property name="bii" value="${links_info['base']['inertial']['inertia']}" />
+  <xacro:property name="bvo" value="${geometry_config['base']['visual']['origin']}" />
+  <xacro:property name="bco" value="${geometry_config['base']['collision']['origin']}" />
   <xacro:property name="jbo" value="${joints_info['base']['origin']}" />
 
   <link name="base_footprint"/>
@@ -45,11 +47,11 @@
     </inertial>
     <visual>
       <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
+        xyz="${bvo['x']} ${bvo['y']} ${bvo['z']}"
+        rpy="${bvo['roll']} ${bvo['pitch']} ${bvo['yaw']}" />
       <geometry>
         <mesh
-          filename="file://$(find ${mesh_files['package']})/${mesh_files['base']['visual']['path']}" />
+          filename="file://$(find ${geometry_config['package']})/${geometry_config['base']['visual']['path']}" />
       </geometry>
       <material
         name="">
@@ -59,11 +61,11 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
+        xyz="${bco['x']} ${bco['y']} ${bco['z']}"
+        rpy="${bco['roll']} ${bco['pitch']} ${bco['yaw']}" />
       <geometry>
         <mesh
-          filename="file://$(find ${mesh_files['package']})/${mesh_files['base']['collision']['path']}" />
+          filename="file://$(find ${geometry_config['package']})/${geometry_config['base']['collision']['path']}" />
       </geometry>
     </collision>
   </link>
@@ -72,15 +74,15 @@
   <xacro:property name="wheel_joint" value="${joints_info['wheel']}" />
 
   <xacro:swerve_wheel
-    side="lf_"  parent="base_link" mesh_files="${mesh_files}" swerve_joint="${swerve_joint['lf']}" 
+    side="lf_"  parent="base_link" geometry_config="${geometry_config}" swerve_joint="${swerve_joint['lf']}" 
     wheel_joint="${wheel_joint['lf']}" links="${links_info}" />
   <xacro:swerve_wheel
-    side="rf_"  parent="base_link" mesh_files="${mesh_files}" swerve_joint="${swerve_joint['rf']}" 
+    side="rf_"  parent="base_link" geometry_config="${geometry_config}" swerve_joint="${swerve_joint['rf']}" 
     wheel_joint="${wheel_joint['rf']}" links="${links_info}" />
   <xacro:swerve_wheel
-    side="rr_"  parent="base_link" mesh_files="${mesh_files}" swerve_joint="${swerve_joint['rr']}" 
+    side="rr_"  parent="base_link" geometry_config="${geometry_config}" swerve_joint="${swerve_joint['rr']}" 
     wheel_joint="${wheel_joint['rr']}" links="${links_info}" />
   <xacro:swerve_wheel
-    side="lr_"  parent="base_link" mesh_files="${mesh_files}" swerve_joint="${swerve_joint['lr']}" 
+    side="lr_"  parent="base_link" geometry_config="${geometry_config}" swerve_joint="${swerve_joint['lr']}" 
     wheel_joint="${wheel_joint['lr']}" links="${links_info}" />
 </robot>
