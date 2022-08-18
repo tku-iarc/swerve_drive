@@ -1,14 +1,31 @@
 <?xml version="1.0"?>
 <robot name="swerve_drive" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.ros2_control.xacro" />
-  <ros2_control name="GazeboSystem" type="system">
-    <hardware>
-        <plugin>gazebo_ros2_control/GazeboSystem</plugin>
-    </hardware>
-    <xacro:wheel_ros2_control side="lf_" swerve_id="0" wheel_id="1"/>
-    <xacro:wheel_ros2_control side="rf_" swerve_id="2" wheel_id="3"/>
-    <xacro:wheel_ros2_control side="rr_" swerve_id="4" wheel_id="5"/>
-    <xacro:wheel_ros2_control side="lr_" swerve_id="6" wheel_id="7"/>
-  </ros2_control>
+  <xacro:macro name="swerve_drive_ros2_control" params="prefix">
+  
+    <physics type='ode'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>0.1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <gravity>0 0 -9.8</gravity>
+    </physics>
+
+    <gazebo>
+      <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+        <robot_param>robot_description</robot_param>
+        <parameters>$(find swerve_drive_description)/config/ros_controllers.yaml</parameters>
+      </plugin>
+    </gazebo>
+
+    <ros2_control name="GazeboSystem" type="system">
+      <hardware>
+          <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+      </hardware>
+      <xacro:wheel_ros2_control prefix="${prefix}" side="lf_" swerve_id="0" wheel_id="1"/>
+      <xacro:wheel_ros2_control prefix="${prefix}" side="rf_" swerve_id="2" wheel_id="3"/>
+      <xacro:wheel_ros2_control prefix="${prefix}" side="rr_" swerve_id="4" wheel_id="5"/>
+      <xacro:wheel_ros2_control prefix="${prefix}" side="lr_" swerve_id="6" wheel_id="7"/>
+    </ros2_control>
+  </xacro:macro>
 </robot>
 

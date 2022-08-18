@@ -462,7 +462,7 @@ int EposCommunication::FindHome(unsigned short p_usNodeId, signed char homing_me
 int EposCommunication::HomingSuccess(unsigned short p_usNodeId, unsigned int* p_pErrorCode)
 {
 	int lResult = MMC_SUCCESS;
-	unsigned int timeout = 6000000; //timeout in ms, should be shorter after testing
+	// unsigned int timeout = 6000000; //timeout in ms, should be shorter after testing
 	HANDLE p_DeviceHandle = (p_usNodeId == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle;
 
 	// if(VCS_WaitForHomingAttained(p_DeviceHandle, p_usNodeId, timeout, p_pErrorCode) == MMC_FAILED)
@@ -791,7 +791,7 @@ int EposCommunication::homing(unsigned short p_usNodeId, bool refind)
 
 int EposCommunication::homingSuccess(unsigned short p_usNodeId)
 {
-	int lResult = MMC_FAILED;
+	// int lResult = MMC_FAILED;
 	unsigned int ulErrorCode = 0;
 	// if((lResult = HomingSuccess(p_usNodeId, &ulErrorCode))==MMC_FAILED)
 	// {
@@ -906,7 +906,7 @@ int EposCommunication::setVelocityMust(unsigned short p_usNodeId, double& veloci
 	int lResult = MMC_SUCCESS;
 	unsigned int ulErrorCode = 0;
 	HANDLE p_DeviceHandle = (p_usNodeId == g_usNodeId) ? g_pKeyHandle : g_pSubKeyHandle; 
-	long velocity_cmd = (fabs(radsToRpm(velocity_setpoint)) > pMaxProfileVelocity) ? ((velocity_setpoint > 0) - (velocity_setpoint < 0)) * pMaxProfileVelocity : radsToRpm(velocity_setpoint);
+	// long velocity_cmd = (fabs(radsToRpm(velocity_setpoint)) > pMaxProfileVelocity) ? ((velocity_setpoint > 0) - (velocity_setpoint < 0)) * pMaxProfileVelocity : radsToRpm(velocity_setpoint);
 	if(VCS_SetVelocityMust(p_DeviceHandle, p_usNodeId, radsToRpm(velocity_setpoint), &ulErrorCode) == MMC_FAILED)
 	{
 		LogError("VCS_SetVelocityMust", lResult, ulErrorCode, p_usNodeId);

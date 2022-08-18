@@ -24,6 +24,7 @@ def launch_setup(context, *args, **kwargs):
     robot_type = LaunchConfiguration("robot_type")
     namespace = LaunchConfiguration("namespace")
     sim = LaunchConfiguration("sim")
+    load_gazebo = LaunchConfiguration("load_gazebo")
     joy_dev = LaunchConfiguration("joy_dev")
 
     vehicle_data = PathJoinSubstitution(
@@ -54,7 +55,7 @@ def launch_setup(context, *args, **kwargs):
             "namespace": namespace,
             "prefix": prefix,
         }.items(),
-        condition=IfCondition(sim),
+        condition=IfCondition(load_gazebo),
     )
 
     nodes_to_start = [
@@ -107,6 +108,14 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "sim",
             default_value="true",
+            description="Using gazebo or not",
+        )
+    )
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "load_gazebo",
+            default_value="false",
             description="Using gazebo or not",
         )
     )

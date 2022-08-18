@@ -50,7 +50,7 @@ EposController::EposController(std::string& node_name)
 	while(!homing_done)
 	{
 		homing_done = true;
-		for(int i=0; i<pos_list_.size(); i++)
+		for(size_t i=0; i<pos_list_.size(); i++)
 		{
 			readVelocity(pos_list_[i]);
 			double cmd = -1 * vel[pos_list_[i]] * 0.1566416;
@@ -192,6 +192,7 @@ bool EposController::writeProfilePosition(int id, double& cmd, double& vel, doub
 		RCLCPP_ERROR(this->get_logger(), "Seting position failed");
 		return false;
 	}
+	return true;
 }
 
 void EposController::setMotorCmd(int id, double& cmd)
@@ -201,7 +202,7 @@ void EposController::setMotorCmd(int id, double& cmd)
 
 void EposController::motorCmdsCallback(const mobile_base_msgs::msg::MotorCmds::SharedPtr msg)
 {
-	for(int i=0; i < msg->motor_ids.size(); i++)
+	for(size_t i=0; i < msg->motor_ids.size(); i++)
 		this->cmd[msg->motor_ids[i]] = msg->cmd_values[i];
 }
 
@@ -238,7 +239,7 @@ void EposController::mainLoopCallback()
 		this->readPosition(*it);
 		this->readVelocity(*it);
 	}
-	for(int i=0; i<vel_list_.size(); i++)
+	for(size_t i=0; i<vel_list_.size(); i++)
 	{
 		double cmd = this->getCmd(vel_list_[i]) - (this->getVel(pos_list_[i]) * 0.1566416);
 		this->writeVelocity(vel_list_[i], cmd);

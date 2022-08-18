@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.gazebo.xacro" />
-  <xacro:macro name="swerve_wheel" params="side parent geometry_config swerve_joint wheel_joint links">
+  <xacro:macro name="swerve_wheel" params="prefix side parent geometry_config swerve_joint wheel_joint links">
 
     <xacro:property name="sjo" value="${swerve_joint['origin']}" />
     <xacro:property name="sja" value="${swerve_joint['axis']}" />
@@ -18,7 +18,7 @@
 
     
     <link
-        name="${side}swerve_link">
+        name="${prefix}${side}swerve_link">
         <inertial>
             <origin
                 xyz="${sio['x']} ${sio['y']} ${sio['z']}"
@@ -58,7 +58,7 @@
         </collision>
     </link>
     <joint
-        name="${side}swerve_joint"
+        name="${prefix}${side}swerve_joint"
         type="continuous">
         <origin
             xyz="${sjo['x']} ${sjo['y']} ${sjo['z']}"
@@ -66,7 +66,7 @@
         <parent
             link="${parent}" />
         <child
-            link="${side}swerve_link" />
+            link="${prefix}${side}swerve_link" />
         <axis
             xyz="${sja['x']} ${sja['y']} ${sja['z']}" />
         <limit
@@ -74,7 +74,7 @@
             velocity="3.2" />
     </joint>
     <link
-        name="${side}wheel_link">
+        name="${prefix}${side}wheel_link">
         <inertial>
             <origin
                 xyz="${wio['x']} ${wio['y']} ${wio['z']}"
@@ -114,21 +114,21 @@
         </collision>
     </link>
     <joint
-        name="${side}wheel_joint"
+        name="${prefix}${side}wheel_joint"
         type="continuous">
         <origin
             xyz="${wjo['x']} ${wjo['y']} ${wjo['z']}"
             rpy="${wjo['roll']} ${wjo['pitch']} ${wjo['yaw']}" />
         <parent
-            link="${side}swerve_link" />
+            link="${prefix}${side}swerve_link" />
         <child
-            link="${side}wheel_link" />
+            link="${prefix}${side}wheel_link" />
         <axis
             xyz="${wja['x']} ${wja['y']} ${wja['z']}" />
         <limit
             effort="0.3"
             velocity="12.7" />
     </joint>
-    <xacro:wheel_gazebo side="${side}"/>
+    <xacro:wheel_gazebo side="${side}" prefix="${prefix}"/>
   </xacro:macro>
 </robot>

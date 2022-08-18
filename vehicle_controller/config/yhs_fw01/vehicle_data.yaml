@@ -11,25 +11,25 @@ vehicle_controller:
         joints:
           - "lf_swerve_joint"
           - "lf_wheel_joint"
-        pos_on_vehicle: [0.24858, 0.17929]
+        pos_on_vehicle: [0.2, 0.21]
       rf_wheel:
         motors_id: [3, 4]
         joints:
           - "rf_swerve_joint"
           - "rf_wheel_joint"
-        pos_on_vehicle: [0.24858, -0.18071]
+        pos_on_vehicle: [0.2, -0.21]
       rr_wheel:
         motors_id: [5, 6]
         joints:
           - "rr_swerve_joint"
           - "rr_wheel_joint"
-        pos_on_vehicle: [-0.28642, -0.18071]
+        pos_on_vehicle: [-0.2, -0.21]
       lr_wheel:
         motors_id: [7, 8]
         joints:
           - "lr_swerve_joint"
           - "lr_wheel_joint"
-        pos_on_vehicle: [-0.28642, 0.17929]
+        pos_on_vehicle: [-0.2, 0.21]
 
     dir_acc_max: 1.0
     ang_acc_max: 1.0

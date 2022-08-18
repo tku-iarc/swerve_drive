@@ -47,7 +47,7 @@ private:
     void joysticMsgCallback(const sensor_msgs::msg::Joy::SharedPtr msg);
     void jointStatesCallback(const sensor_msgs::msg::JointState::SharedPtr state);
     // void wheelStateCallback(const mobile_base_msgs::msg::WheelDirection::SharedPtr state);
-    void initKinematicsData(std::vector<std::string> wheels_name);
+    void initKinematicsData(std::vector<std::string>& wheels_name);
     void ensureCmdLimit();
     void vehicleOdometer(rclcpp::Rate& loop_rate);
     void vehicleStatePublish();
@@ -66,6 +66,7 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
     rclcpp::Service<mobile_base_msgs::srv::Calibration>::SharedPtr calib_server_;
 
+    std::vector<std::string> wheels_name_;
     std::map<std::string, std::vector<double>> joint_states_;
     std::map<std::string, wheel_controller::WheelController*> wheel_controllers_;
     std::map<std::string, mobile_base_msgs::msg::WheelDirection::SharedPtr> wheels_direction_cmd_;

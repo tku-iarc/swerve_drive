@@ -20,8 +20,8 @@ VehicleController::VehicleController(std::string& node_name)
     this->get_parameter_or("dir_acc_max", dir_acc_max_, 1.0);
     this->get_parameter_or("ang_acc_max", ang_acc_max_, 1.0);
 
-    std::vector<std::string> wheels_name = this->get_parameter("wheel_data.wheels_name").as_string_array();
-    for(auto it=wheels_name.begin(); it!=wheels_name.end(); ++it)
+    wheels_name_ = this->get_parameter("wheel_data.wheels_name").as_string_array();
+    for(auto it=wheels_name_.begin(); it!=wheels_name_.end(); ++it)
     {
         auto_declare<std::vector<int>>("wheel_data." + *it + ".motors_id", std::vector<int>());
         auto_declare<std::vector<std::string>>("wheel_data." + *it + ".joints", std::vector<std::string>());
@@ -41,7 +41,7 @@ VehicleController::VehicleController(std::string& node_name)
                       &VehicleController::calibrationCallback, this, std::placeholders::_1, std::placeholders::_2));
 
 
-    for(auto it=wheels_name.begin(); it!=wheels_name.end(); ++it)
+    for(auto it=wheels_name_.begin(); it!=wheels_name_.end(); ++it)
     {
         auto id_param = this->get_parameter("wheel_data." + *it + ".motors_id").as_integer_array();
         std::vector<int> id(id_param.begin(), id_param.end());
@@ -56,7 +56,7 @@ VehicleController::VehicleController(std::string& node_name)
             joint_states_.insert(std::pair<std::string, std::vector<double>>(*jn, vec_init));
         }
     }
-    initKinematicsData(wheels_name);
+    initKinematicsData(wheels_name_);
     kinematics = VehicleKinematics();
     odom_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     timer_ = this->create_wall_timer(100ms, std::bind(&VehicleController::mainLoopCallback, this));
@@ -67,7 +67,7 @@ VehicleController::~VehicleController()
 
 }
 
-void VehicleController::initKinematicsData(std::vector<std::string> wheels_name)
+void VehicleController::initKinematicsData(std::vector<std::string>& wheels_name)
 {
     kinematics_data_.direction[0] = 0;
     kinematics_data_.direction[1] = 0;
@@ -132,13 +132,14 @@ void VehicleController::vehicleCmdCallback(const mobile_base_msgs::msg::VehicleC
     this->ensureCmdLimit();
     if(kinematics.inverseKinematics(kinematics_data_))
     {
-        for(auto it=kinematics_data_.wheel_data.begin(); it!=kinematics_data_.wheel_data.end(); it++)
+        // for(auto it=kinematics_data_.wheel_data_vector.begin(); it!=kinematics_data_.wheel_data_vector.end(); it++)
+        for(auto it=wheels_name_.begin(); it!=wheels_name_.end(); ++it)
         {
             auto wheel_dir = std::make_shared<mobile_base_msgs::msg::WheelDirection>();
-            wheel_dir->wheel_name = it->first;
-            wheel_dir->dir_x = it->second.direction_cmd[0];
-            wheel_dir->dir_y = it->second.direction_cmd[1];
-            wheels_direction_cmd_[it->first] = wheel_dir;
+            wheel_dir->wheel_name = *it;
+            wheel_dir->dir_x = kinematics_data_.wheel_data[*it].direction_cmd[0];
+            wheel_dir->dir_y = kinematics_data_.wheel_data[*it].direction_cmd[1];
+            wheels_direction_cmd_[*it] = wheel_dir;
             // wheels_pub_[it->first]->publish(wheel_dir);
         }
         sendCmd();
@@ -162,13 +163,14 @@ void VehicleController::joysticMsgCallback(const sensor_msgs::msg::Joy::SharedPt
     }
     
     kinematics.inverseKinematics(kinematics_data_);
-    for(auto it=kinematics_data_.wheel_data.begin(); it!=kinematics_data_.wheel_data.end(); it++)
+    // for(auto it=kinematics_data_.wheel_data_vector.begin(); it!=kinematics_data_.wheel_data_vector.end(); it++)
+    for(auto it=wheels_name_.begin(); it!=wheels_name_.end(); ++it)
     {
         auto wheel_dir = std::make_shared<mobile_base_msgs::msg::WheelDirection>();
-        wheel_dir->wheel_name = it->first;
-        wheel_dir->dir_x = it->second.direction_cmd[0] * JOY_SPEED;
-        wheel_dir->dir_y = it->second.direction_cmd[1] * JOY_SPEED;
-        wheels_direction_cmd_[it->first] = wheel_dir;
+        wheel_dir->wheel_name = *it;
+        wheel_dir->dir_x = kinematics_data_.wheel_data[*it].direction_cmd[0] * JOY_SPEED;
+        wheel_dir->dir_y = kinematics_data_.wheel_data[*it].direction_cmd[1] * JOY_SPEED;
+        wheels_direction_cmd_[*it] = wheel_dir;
         // wheels_pub_[it->first]->publish(wheel_dir);
     }
     sendCmd();
@@ -255,11 +257,11 @@ void VehicleController::vehicleStatePublish()
 void VehicleController::sendCmd()
 {
     std_msgs::msg::Float64MultiArray swerves_cmd, wheels_cmd;
-    for(auto const& [name, controller] : wheel_controllers_)
+    for(auto const& name : wheels_name_)
     {
         std::vector<double> cmds;
         cmds.resize(2, std::numeric_limits<double>::quiet_NaN());
-        controller->getWheelCmd(wheels_direction_cmd_[name], cmds);
+        wheel_controllers_[name]->getWheelCmd(wheels_direction_cmd_[name], cmds);
         swerves_cmd.data.push_back(cmds[0]);
         wheels_cmd.data.push_back(cmds[1]);
     }

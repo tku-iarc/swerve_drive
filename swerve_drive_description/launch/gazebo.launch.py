@@ -45,7 +45,9 @@ def launch_setup(context, *args, **kwargs):
             "prefix:=",
             prefix,
             " ",
-
+            "description_package:=",
+            description_package,
+            " ",
         ]
     )
     robot_description = {"robot_description": robot_description_content}
@@ -156,7 +158,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "description_file",
-            default_value="swerve_drive.xacro",
+            default_value="load_swerve_drive.xacro",
             description="URDF/XACRO description file with the robot.",
         )
     )
