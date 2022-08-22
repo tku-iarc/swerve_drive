@@ -86,14 +86,15 @@ void WheelController::updateJointData(const std::vector<std::vector<double>>& jo
 {
     for(size_t i=0; i<joint_data.size(); i++)
     {
-        joint_data[i]->joint_position_ = joint_state[0][i];
-        joint_data[i]->joint_angle_ = fmod(joint_state[0][i], 2 * M_PI);
-        if(joint_data[i]->joint_angle_ > M_PI)
-            joint_data[i]->joint_angle_ -= 2 * M_PI;
-        else if (joint_data[i]->joint_angle_ < -1 * M_PI)
-            joint_data[i]->joint_angle_ += 2 * M_PI;
+        joint_data[i]->joint_position_ = joint_state[i][0];
+        double joint_angle = fmod(joint_state[i][0], 2 * M_PI);
+        if(joint_angle > M_PI)
+            joint_angle -= 2 * M_PI;
+        else if (joint_angle < -1 * M_PI)
+            joint_angle += 2 * M_PI;
+        joint_data[i]->joint_angle_ = joint_angle;
         joint_data[i]->velocity_ = joint_state[1][i];
-        joint_data[i]->acceleration_ = joint_state[2][i];
+        joint_data[i]->acceleration_ = joint_state[i][2];
     }
     wheel_state->dir_x = cos(joint_data[0]->joint_angle_);
     wheel_state->dir_x *= radsTometers(joint_data[1]->velocity_);
@@ -132,8 +133,11 @@ void WheelController::getWheelCmd(const mobile_base_msgs::msg::WheelDirection::S
 {
     double swerve_angle = atan2(msg->dir_y, msg->dir_x);
     double wheel_velocity = metersToRads(sqrt(msg->dir_x*msg->dir_x + msg->dir_y*msg->dir_y));
-    double dis_angle = (fabs(swerve_angle - joint_data[0]->joint_angle_) > M_PI) ? 
-        2 * M_PI - fabs(swerve_angle - joint_data[0]->joint_angle_) : fabs(swerve_angle - joint_data[0]->joint_angle_);
+    double dis_angle = fabs(swerve_angle - joint_data[0]->joint_angle_);
+    // double dis_angle = (fabs(swerve_angle - joint_data[0]->joint_angle_) > M_PI) ? 
+    //     2 * M_PI - fabs(swerve_angle - joint_data[0]->joint_angle_) : fabs(swerve_angle - joint_data[0]->joint_angle_);
+    if (dis_angle > M_PI)
+        dis_angle = 2 * M_PI - dis_angle;
     if(dis_angle > M_PI / 2)
     {
         swerve_angle += (swerve_angle > 0) ? -1 * M_PI : M_PI;

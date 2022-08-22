@@ -57,12 +57,14 @@ private:
     int wheel_numbers;
     double dir_acc_max_;
     double ang_acc_max_;
+    std::string prefix_;
 
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
     rclcpp::Publisher<mobile_base_msgs::msg::VehicleState>::SharedPtr state_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr swerve_cmd_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr wheel_cmd_pub_;
     rclcpp::Subscription<mobile_base_msgs::msg::VehicleCmd>::SharedPtr cmd_sub_;
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_states_sub_;
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
     rclcpp::Service<mobile_base_msgs::srv::Calibration>::SharedPtr calib_server_;
 

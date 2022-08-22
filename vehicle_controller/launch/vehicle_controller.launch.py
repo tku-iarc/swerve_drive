@@ -35,7 +35,7 @@ def launch_setup(context, *args, **kwargs):
         package="vehicle_controller",
         executable="vehicle_controller_node",
         namespace=namespace,
-        parameters=[{"sim": sim}, vehicle_data],
+        parameters=[{"sim": sim, "prefix": prefix,}, vehicle_data],
         output="screen"
     )
 

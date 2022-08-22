@@ -72,6 +72,9 @@
         <limit
             effort="100"
             velocity="3.2" />
+        <dynamics
+            damping="100"
+            friction="10" />
     </joint>
     <link
         name="${prefix}${side}wheel_link">
@@ -128,6 +131,9 @@
         <limit
             effort="0.3"
             velocity="12.7" />
+        <dynamics 
+            damping="40"
+            friction="4" />
     </joint>
     <xacro:wheel_gazebo side="${side}" prefix="${prefix}"/>
   </xacro:macro>

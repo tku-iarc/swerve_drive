@@ -14,11 +14,13 @@ VehicleController::VehicleController(std::string& node_name)
     auto_declare<bool>("sim", false);
     auto_declare<double>("dir_acc_max", NAN);
     auto_declare<double>("ang_acc_max", NAN);
+    auto_declare<std::string>("prefix", std::string());
     auto_declare<std::vector<std::string>>("wheel_data.wheels_name", std::vector<std::string>());
 
     this->get_parameter_or("sim", sim_, false);
     this->get_parameter_or("dir_acc_max", dir_acc_max_, 1.0);
     this->get_parameter_or("ang_acc_max", ang_acc_max_, 1.0);
+    this->get_parameter_or("prefix", prefix_, std::string());
 
     wheels_name_ = this->get_parameter("wheel_data.wheels_name").as_string_array();
     for(auto it=wheels_name_.begin(); it!=wheels_name_.end(); ++it)
@@ -29,17 +31,18 @@ VehicleController::VehicleController(std::string& node_name)
     }
 
 
-    state_pub_      = this->create_publisher<mobile_base_msgs::msg::VehicleState>("vehicle/state", 1);
-    odom_pub_       = this->create_publisher<nav_msgs::msg::Odometry>("vehicle/odom", 1);
-    swerve_cmd_pub_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("swerve_controller/commands", 1);
-    wheel_cmd_pub_  = this->create_publisher<std_msgs::msg::Float64MultiArray>("wheel_controller/commands", 1);
-    cmd_sub_        = this->create_subscription<mobile_base_msgs::msg::VehicleCmd>("vehicle/cmd", 1, std::bind(
-                      &VehicleController::vehicleCmdCallback, this, std::placeholders::_1));
-    joy_sub         = this->create_subscription<sensor_msgs::msg::Joy>("joy", 1, std::bind(
-                      &VehicleController::joysticMsgCallback, this, std::placeholders::_1));
-    calib_server_   = this->create_service<mobile_base_msgs::srv::Calibration>("vehicle/calibration", std::bind(
-                      &VehicleController::calibrationCallback, this, std::placeholders::_1, std::placeholders::_2));
-
+    state_pub_        = this->create_publisher<mobile_base_msgs::msg::VehicleState>("vehicle/state", 1);
+    odom_pub_         = this->create_publisher<nav_msgs::msg::Odometry>("vehicle/odom", 1);
+    swerve_cmd_pub_   = this->create_publisher<std_msgs::msg::Float64MultiArray>("swerve_controller/commands", 1);
+    wheel_cmd_pub_    = this->create_publisher<std_msgs::msg::Float64MultiArray>("wheel_controller/commands", 1);
+    cmd_sub_          = this->create_subscription<mobile_base_msgs::msg::VehicleCmd>("vehicle/cmd", 1, std::bind(
+                        &VehicleController::vehicleCmdCallback, this, std::placeholders::_1));
+    joy_sub           = this->create_subscription<sensor_msgs::msg::Joy>("joy", 1, std::bind(
+                        &VehicleController::joysticMsgCallback, this, std::placeholders::_1));
+    joint_states_sub_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 1, std::bind(
+                        &VehicleController::jointStatesCallback, this, std::placeholders::_1));
+    calib_server_     = this->create_service<mobile_base_msgs::srv::Calibration>("vehicle/calibration", std::bind(
+                        &VehicleController::calibrationCallback, this, std::placeholders::_1, std::placeholders::_2));
 
     for(auto it=wheels_name_.begin(); it!=wheels_name_.end(); ++it)
     {
@@ -53,7 +56,7 @@ VehicleController::VehicleController(std::string& node_name)
         for(auto jn=joints_name.begin(); jn!=joints_name.end(); ++jn)
         {
             std::vector<double> vec_init(3, std::numeric_limits<double>::quiet_NaN());
-            joint_states_.insert(std::pair<std::string, std::vector<double>>(*jn, vec_init));
+            joint_states_.insert(std::pair<std::string, std::vector<double>>(prefix_ + *jn, vec_init));
         }
     }
     initKinematicsData(wheels_name_);
@@ -88,7 +91,9 @@ void VehicleController::initKinematicsData(std::vector<std::string>& wheels_name
         wheel_data.direction_cmd[1] = 0;
         wheel_data.pos_on_vehicle[0] = this->get_parameter("wheel_data." + *it + ".pos_on_vehicle").as_double_array()[0];
         wheel_data.pos_on_vehicle[1] = this->get_parameter("wheel_data." + *it + ".pos_on_vehicle").as_double_array()[1];
-        wheel_data.joints_name = this->get_parameter("wheel_data." + *it + ".joints").as_string_array();
+        auto joints_name = this->get_parameter("wheel_data." + *it + ".joints").as_string_array();
+        for(auto jn=joints_name.begin(); jn!=joints_name.end(); ++jn)
+            wheel_data.joints_name.push_back(prefix_ + *jn);
         kinematics_data_.wheel_data_vector.push_back(wheel_data);
         kinematics_data_.wheel_data.insert(std::pair<std::string, WheelData>(*it, wheel_data));
     }
@@ -108,6 +113,8 @@ void VehicleController::jointStatesCallback(const sensor_msgs::msg::JointState::
 {
     for(size_t i=0; i<state->name.size(); i++)
     {
+        if (joint_states_.find(state->name[i]) == joint_states_.end())
+            continue;
         joint_states_[state->name[i]][0] = state->position[i];
         joint_states_[state->name[i]][1] = state->velocity[i];
         joint_states_[state->name[i]][2] = state->effort[i];
@@ -116,8 +123,10 @@ void VehicleController::jointStatesCallback(const sensor_msgs::msg::JointState::
     {
         std::vector<std::vector<double>> wheel_state;
         auto wheel_dir = std::make_shared<mobile_base_msgs::msg::WheelDirection>();
+
         for(std::string jn : kinematics_data_.wheel_data[name].joints_name)
             wheel_state.push_back(joint_states_[jn]);
+        
         controller->updateJointData(wheel_state, wheel_dir);
         kinematics_data_.wheel_data[name].direction[0] = wheel_dir->dir_x;
         kinematics_data_.wheel_data[name].direction[1] = wheel_dir->dir_y;
@@ -224,7 +233,7 @@ void VehicleController::vehicleStatePublish()
     geometry_msgs::msg::TransformStamped odom_trans;
     odom_trans.header.stamp = curr_time;
     odom_trans.header.frame_id = "odom";
-    odom_trans.child_frame_id = "base_link";
+    odom_trans.child_frame_id = "base_footprint";
 
     odom_trans.transform.translation.x = kinematics_data_.position[0];
     odom_trans.transform.translation.y = kinematics_data_.position[1];
@@ -245,7 +254,7 @@ void VehicleController::vehicleStatePublish()
     odom.pose.pose.orientation = odom_trans.transform.rotation;
 
     //set the velocity
-    odom.child_frame_id = "base_link";
+    odom.child_frame_id = "base_footprint";
     odom.twist.twist.linear.x = kinematics_data_.direction[0];
     odom.twist.twist.linear.y = kinematics_data_.direction[1];
     odom.twist.twist.angular.z = kinematics_data_.angular_velocity;
