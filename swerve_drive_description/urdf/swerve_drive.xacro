@@ -2,6 +2,8 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:include filename="$(find swerve_drive_description)/urdf/wheel.xacro" />
   <xacro:include filename="$(find swerve_drive_description)/urdf/swerve_drive.gazebo.xacro" />
+  <xacro:include filename="$(find swerve_drive_description)/urdf/swerve_drive_sensor.xacro" />
+
 
   <!-- <xacro:arg name="robot_type" default=""/> -->
   <!-- <xacro:arg name="name" default="" /> -->
@@ -89,5 +91,6 @@
       swerve_joint="${swerve_joint['lr']}" wheel_joint="${wheel_joint['lr']}" links="${links_info}" />
 
     <xacro:swerve_drive_gazebo prefix="${prefix}"/>
+    <xacro:swerve_drive_sensor prefix="${prefix}"/>
   </xacro:macro>
 </robot>
