@@ -19,12 +19,11 @@ def launch_setup(context, *args, **kwargs):
     # General arguments
     runtime_config_package = LaunchConfiguration("runtime_config_package")
     vehicle_data_file = LaunchConfiguration("vehicle_data_file")
-    description_package = LaunchConfiguration("description_package")
     prefix = LaunchConfiguration("prefix")
     robot_type = LaunchConfiguration("robot_type")
     namespace = LaunchConfiguration("namespace")
     sim = LaunchConfiguration("sim")
-    load_gazebo = LaunchConfiguration("load_gazebo")
+    use_sim_time = LaunchConfiguration("use_sim_time")
     joy_dev = LaunchConfiguration("joy_dev")
 
     vehicle_data = PathJoinSubstitution(
@@ -35,7 +34,7 @@ def launch_setup(context, *args, **kwargs):
         package="vehicle_controller",
         executable="vehicle_controller_node",
         namespace=namespace,
-        parameters=[{"sim": sim, "prefix": prefix,}, vehicle_data],
+        parameters=[{"sim": sim, "prefix": prefix, "use_sim_time": use_sim_time}, vehicle_data],
         output="screen"
     )
 
@@ -43,24 +42,11 @@ def launch_setup(context, *args, **kwargs):
         package="joy_linux",
         executable="joy_linux_node",
         namespace=namespace,
-        parameters=[{"dev": "/dev/input/" + joy_dev.perform(context)}],
-    )
-
-    swerve_drive_gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [FindPackageShare(description_package), "/launch", "/gazebo.launch.py"]
-        ),
-        launch_arguments={
-            "robot_type": robot_type,
-            "namespace": namespace,
-            "prefix": prefix,
-        }.items(),
-        condition=IfCondition(load_gazebo),
+        parameters=[{"use_sim_time": use_sim_time, "dev": "/dev/input/" + joy_dev.perform(context)}],
     )
 
     nodes_to_start = [
         vehicle_controller_node,
-        swerve_drive_gazebo,
         joystick_node,
     ]
 
@@ -88,14 +74,6 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "description_package",
-            default_value="swerve_drive_description",
-            description="Description package with robot URDF/XACRO files. Usually the argument \
-        is not set, it enables use of a custom description.",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
             "prefix",
             default_value='""',
             description="Prefix of the joint names, useful for \
@@ -114,9 +92,9 @@ def generate_launch_description():
 
     declared_arguments.append(
         DeclareLaunchArgument(
-            "load_gazebo",
-            default_value="false",
-            description="Using gazebo or not",
+            "use_sim_time",
+            default_value="true",
+            description="Using sim time or not",
         )
     )
 
