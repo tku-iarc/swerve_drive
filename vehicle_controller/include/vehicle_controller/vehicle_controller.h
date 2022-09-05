@@ -43,7 +43,7 @@ public:
 private:
     bool calibrationCallback(const std::shared_ptr<mobile_base_msgs::srv::Calibration::Request> req, 
                              std::shared_ptr<mobile_base_msgs::srv::Calibration::Response> res);
-    void vehicleCmdCallback(const mobile_base_msgs::msg::VehicleCmd::SharedPtr cmd);
+    void vehicleCmdCallback(const geometry_msgs::msg::Twist::SharedPtr cmd);
     void joysticMsgCallback(const sensor_msgs::msg::Joy::SharedPtr msg);
     void jointStatesCallback(const sensor_msgs::msg::JointState::SharedPtr state);
     // void wheelStateCallback(const mobile_base_msgs::msg::WheelDirection::SharedPtr state);
@@ -54,6 +54,7 @@ private:
     void sendCmd();
 
     bool sim_;
+    bool en_joy_;
     int wheel_numbers;
     double dir_acc_max_;
     double ang_acc_max_;
@@ -63,7 +64,7 @@ private:
     rclcpp::Publisher<mobile_base_msgs::msg::VehicleState>::SharedPtr state_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr swerve_cmd_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr wheel_cmd_pub_;
-    rclcpp::Subscription<mobile_base_msgs::msg::VehicleCmd>::SharedPtr cmd_sub_;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_sub_;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_states_sub_;
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
     rclcpp::Service<mobile_base_msgs::srv::Calibration>::SharedPtr calib_server_;

@@ -3,7 +3,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include "vehicle_controller/vehicle_controller.h"
-#define JOY_SPEED 0.3  //0~1
+#define JOY_SPEED 0.5  //0~1
 using namespace std::chrono_literals;
 
 namespace vehicle_controller
@@ -35,7 +35,7 @@ VehicleController::VehicleController(std::string& node_name)
     odom_pub_         = this->create_publisher<nav_msgs::msg::Odometry>("vehicle/odom", 1);
     swerve_cmd_pub_   = this->create_publisher<std_msgs::msg::Float64MultiArray>("swerve_controller/commands", 1);
     wheel_cmd_pub_    = this->create_publisher<std_msgs::msg::Float64MultiArray>("wheel_controller/commands", 1);
-    cmd_sub_          = this->create_subscription<mobile_base_msgs::msg::VehicleCmd>("vehicle/cmd", 1, std::bind(
+    cmd_sub_          = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 1, std::bind(
                         &VehicleController::vehicleCmdCallback, this, std::placeholders::_1));
     joy_sub           = this->create_subscription<sensor_msgs::msg::Joy>("joy", 1, std::bind(
                         &VehicleController::joysticMsgCallback, this, std::placeholders::_1));
@@ -62,7 +62,7 @@ VehicleController::VehicleController(std::string& node_name)
     initKinematicsData(wheels_name_);
     kinematics = VehicleKinematics();
     odom_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-    timer_ = this->create_wall_timer(100ms, std::bind(&VehicleController::mainLoopCallback, this));
+    timer_ = this->create_wall_timer(40ms, std::bind(&VehicleController::mainLoopCallback, this));
 }
 
 VehicleController::~VehicleController()
@@ -133,11 +133,13 @@ void VehicleController::jointStatesCallback(const sensor_msgs::msg::JointState::
     }
 }
 
-void VehicleController::vehicleCmdCallback(const mobile_base_msgs::msg::VehicleCmd::SharedPtr cmd)
+void VehicleController::vehicleCmdCallback(const geometry_msgs::msg::Twist::SharedPtr cmd)
 {
-    kinematics_data_.direction_cmd[0] = cmd->vel_x;
-    kinematics_data_.direction_cmd[1] = cmd->vel_y;
-    kinematics_data_.angular_velocity_cmd = cmd->vel_r;
+    if(en_joy_)
+        return;
+    kinematics_data_.direction_cmd[0] = cmd->linear.x;
+    kinematics_data_.direction_cmd[1] = cmd->linear.y;
+    kinematics_data_.angular_velocity_cmd = cmd->angular.z;
     this->ensureCmdLimit();
     if(kinematics.inverseKinematics(kinematics_data_))
     {
@@ -159,28 +161,34 @@ void VehicleController::joysticMsgCallback(const sensor_msgs::msg::Joy::SharedPt
 {
     if(msg->axes[5] > -0.9)
     {
+        if(en_joy_ == false)
+            return;
+
         kinematics_data_.direction_cmd[0] = 0;
         kinematics_data_.direction_cmd[1] = 0;
         kinematics_data_.angular_velocity_cmd = 0;
+        en_joy_ = false;
     }
     else
     {
-        kinematics_data_.direction_cmd[0] = (msg->axes[1] > 0.2) ? msg->axes[1] - 0.2 : (msg->axes[1] < -0.2) ? msg->axes[1] + 0.2 : 0;
-        kinematics_data_.direction_cmd[1] = (msg->axes[0] > 0.2) ? msg->axes[0] - 0.2 : (msg->axes[0] < -0.2) ? msg->axes[0] + 0.2 : 0;
-        kinematics_data_.angular_velocity_cmd = (msg->axes[3] > 0.2) ? msg->axes[3] - 0.2 : (msg->axes[3] < -0.2) ? msg->axes[3] + 0.2 : 0;
+        en_joy_ = true;
+        double dir_x = (msg->axes[1] > 0.2) ? msg->axes[1] - 0.2 : (msg->axes[1] < -0.2) ? msg->axes[1] + 0.2 : 0;
+        double dir_y = (msg->axes[0] > 0.2) ? msg->axes[0] - 0.2 : (msg->axes[0] < -0.2) ? msg->axes[0] + 0.2 : 0;
+        double ang_v = (msg->axes[3] > 0.2) ? msg->axes[3] - 0.2 : (msg->axes[3] < -0.2) ? msg->axes[3] + 0.2 : 0;
+        kinematics_data_.direction_cmd[0] = dir_x * JOY_SPEED;
+        kinematics_data_.direction_cmd[1] = dir_y * JOY_SPEED;
+        kinematics_data_.angular_velocity_cmd = ang_v * M_PI  * JOY_SPEED;
         this->ensureCmdLimit();
     }
     
     kinematics.inverseKinematics(kinematics_data_);
-    // for(auto it=kinematics_data_.wheel_data_vector.begin(); it!=kinematics_data_.wheel_data_vector.end(); it++)
     for(auto it=wheels_name_.begin(); it!=wheels_name_.end(); ++it)
     {
         auto wheel_dir = std::make_shared<mobile_base_msgs::msg::WheelDirection>();
         wheel_dir->wheel_name = *it;
-        wheel_dir->dir_x = kinematics_data_.wheel_data[*it].direction_cmd[0] * JOY_SPEED;
-        wheel_dir->dir_y = kinematics_data_.wheel_data[*it].direction_cmd[1] * JOY_SPEED;
+        wheel_dir->dir_x = kinematics_data_.wheel_data[*it].direction_cmd[0];
+        wheel_dir->dir_y = kinematics_data_.wheel_data[*it].direction_cmd[1];
         wheels_direction_cmd_[*it] = wheel_dir;
-        // wheels_pub_[it->first]->publish(wheel_dir);
     }
     sendCmd();
 }
@@ -192,22 +200,43 @@ void VehicleController::ensureCmdLimit()
     norm_cmd = sqrt(pow(kinematics_data_.direction_cmd[0], 2) + pow(kinematics_data_.direction_cmd[1], 2));
     if(norm_cmd < 0.00001 && kinematics_data_.angular_velocity_cmd < 0.00001)
         return;
-    dis = fabs(norm_cmd - norm_curr);
-    if(dis > dir_acc_max_)
+    dis = norm_cmd - norm_curr;
+    if(fabs(dis) > dir_acc_max_)
     {
-        kinematics_data_.direction_cmd[0] *= (dir_acc_max_ / dis);
-        kinematics_data_.direction_cmd[1] *= (dir_acc_max_ / dis);
+        if(dis > 0)
+        {
+            kinematics_data_.direction_cmd[0] *= ((norm_curr + dir_acc_max_) / norm_cmd);
+            kinematics_data_.direction_cmd[1] *= ((norm_curr + dir_acc_max_) / norm_cmd);
+        }
+        else
+        {
+            if(norm_cmd < 0.00001)
+            {
+                kinematics_data_.direction_cmd[0] = kinematics_data_.direction[0] * ((norm_curr - dir_acc_max_) / norm_curr);
+                kinematics_data_.direction_cmd[1] = kinematics_data_.direction[1] * ((norm_curr - dir_acc_max_) / norm_curr);
+            }
+            else
+            {
+                kinematics_data_.direction_cmd[0] *= ((norm_curr - dir_acc_max_) / norm_cmd);
+                kinematics_data_.direction_cmd[1] *= ((norm_curr - dir_acc_max_) / norm_cmd);
+            }
+        }
     }
-    dis = fabs(kinematics_data_.angular_velocity_cmd - kinematics_data_.angular_velocity);
-    if(dis > ang_acc_max_)
-        kinematics_data_.angular_velocity_cmd *= (ang_acc_max_ / dis);
+    dis = kinematics_data_.angular_velocity_cmd - kinematics_data_.angular_velocity;
+    if(fabs(dis) > ang_acc_max_)
+    {
+        if(dis > 0)
+            kinematics_data_.angular_velocity_cmd = kinematics_data_.angular_velocity + ang_acc_max_;
+        else
+            kinematics_data_.angular_velocity_cmd = kinematics_data_.angular_velocity - ang_acc_max_;
+    }
 }
 
 void VehicleController::vehicleOdometer(rclcpp::Rate& /*loop_rate*/)
 {
     if(kinematics.forwardKinematics(kinematics_data_))
     {    
-        double cycle_time = 0.1; //loop_rate.expectedCycleTime().toSec();
+        double cycle_time = 0.04; //loop_rate.expectedCycleTime().toSec();
         kinematics_data_.rotation += kinematics_data_.angular_velocity * cycle_time;
         kinematics_data_.rotation += (kinematics_data_.rotation > M_PI) ? -2 * M_PI : (kinematics_data_.rotation < -1 * M_PI) ? 2 * M_PI : 0;
         kinematics_data_.position[0] += (cos(kinematics_data_.rotation) * kinematics_data_.direction[0] * cycle_time
@@ -233,7 +262,7 @@ void VehicleController::vehicleStatePublish()
     geometry_msgs::msg::TransformStamped odom_trans;
     odom_trans.header.stamp = curr_time;
     odom_trans.header.frame_id = "odom";
-    odom_trans.child_frame_id = "base_footprint";
+    odom_trans.child_frame_id = prefix_ + "base_footprint";
 
     odom_trans.transform.translation.x = kinematics_data_.position[0];
     odom_trans.transform.translation.y = kinematics_data_.position[1];
@@ -254,7 +283,7 @@ void VehicleController::vehicleStatePublish()
     odom.pose.pose.orientation = odom_trans.transform.rotation;
 
     //set the velocity
-    odom.child_frame_id = "base_footprint";
+    odom.child_frame_id = prefix_ + "base_footprint";
     odom.twist.twist.linear.x = kinematics_data_.direction[0];
     odom.twist.twist.linear.y = kinematics_data_.direction[1];
     odom.twist.twist.angular.z = kinematics_data_.angular_velocity;

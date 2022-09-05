@@ -3,8 +3,10 @@
 #include <string>
 #include <map>
 
-#define WHEEL_DIAMETER 0.15
-#define WHEEL_RADIUS 0.075
+// #define WHEEL_DIAMETER 0.15
+// #define WHEEL_RADIUS 0.075
+#define WHEEL_DIAMETER 0.24
+#define WHEEL_RADIUS 0.12
 
 namespace vehicle_controller
 {
