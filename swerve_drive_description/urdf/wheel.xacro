@@ -129,11 +129,11 @@
         <axis
             xyz="${wja['x']} ${wja['y']} ${wja['z']}" />
         <limit
-            effort="0.3"
+            effort="30"
             velocity="12.7" />
         <dynamics 
-            damping="40"
-            friction="4" />
+            damping="0.4"
+            friction="0.04" />
     </joint>
     <xacro:wheel_gazebo side="${side}" prefix="${prefix}"/>
   </xacro:macro>

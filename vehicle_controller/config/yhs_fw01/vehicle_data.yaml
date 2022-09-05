@@ -31,5 +31,5 @@ vehicle_controller:
           - "lr_wheel_joint"
         pos_on_vehicle: [-0.2, 0.21]
 
-    dir_acc_max: 1.0
-    ang_acc_max: 1.0
+    dir_acc_max: 0.1
+    ang_acc_max: 0.1
