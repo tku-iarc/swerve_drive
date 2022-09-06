@@ -198,7 +198,7 @@ void VehicleController::ensureCmdLimit()
     double norm_curr, norm_cmd, dis;
     norm_curr = sqrt(pow(kinematics_data_.direction[0], 2) + pow(kinematics_data_.direction[1], 2));
     norm_cmd = sqrt(pow(kinematics_data_.direction_cmd[0], 2) + pow(kinematics_data_.direction_cmd[1], 2));
-    if(norm_cmd < 0.00001 && kinematics_data_.angular_velocity_cmd < 0.00001)
+    if(norm_cmd < 0.00001 && fabs(kinematics_data_.angular_velocity_cmd) < 0.00001)
         return;
     dis = norm_cmd - norm_curr;
     if(fabs(dis) > dir_acc_max_)
