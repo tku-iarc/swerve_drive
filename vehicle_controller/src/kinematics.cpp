@@ -1,6 +1,8 @@
 #include <cstdio>
 #include <iostream>
 #include <cmath>
+#include <numeric>
+#include <Eigen/Dense>
 #include "vehicle_controller/kinematics.h"
 namespace vehicle_controller
 {
@@ -10,6 +12,38 @@ VehicleKinematics::VehicleKinematics()
 
 VehicleKinematics::~VehicleKinematics()
 {
+}
+
+bool VehicleKinematics::checkSlippage(KinematicsData &kinematics_data)
+{
+    double max_vbw = 0;
+    std::string max_vbw_wheel;
+    for(auto it_fst = kinematics_data.wheel_data.begin(); it_fst != kinematics_data.wheel_data.end(); it_fst++)
+    {
+        double vbw = 0;
+        it_fst->second.has_slippage = false;
+        for(auto it_sec = kinematics_data.wheel_data.begin(); it_sec != kinematics_data.wheel_data.end(); it_sec++)
+        {
+            if(it_fst == it_sec)
+                continue;
+            Eigen::Vector2d v_1, v_2, l_ij;
+            v_1 << it_fst->second.direction[0],
+                   it_fst->second.direction[1];
+            v_2 << it_sec->second.direction[0],
+                   it_sec->second.direction[1];
+            l_ij << it_fst->second.pos_on_vehicle[0] - it_sec->second.pos_on_vehicle[0],
+                    it_fst->second.pos_on_vehicle[1] - it_sec->second.pos_on_vehicle[1];
+            l_ij /= l_ij.norm();
+            vbw += fabs((v_1 - v_2).dot(l_ij));
+        }
+        if(vbw > max_vbw)
+        {
+            max_vbw = vbw;
+            max_vbw_wheel = it_fst->first;
+        }
+    }
+    kinematics_data.wheel_data[max_vbw_wheel].has_slippage = true;
+    return true;
 }
 
 bool VehicleKinematics::forwardKinematics(KinematicsData &kinematics_data)
@@ -27,11 +61,22 @@ bool VehicleKinematics::forwardKinematics(KinematicsData &kinematics_data)
     //         ang_vel_cnt += 2;
     //     }
     // }
+    if(!checkSlippage(kinematics_data))
+    {
+        return false;
+    }
+    
     for(auto it_fst=kinematics_data.wheel_data.begin(); it_fst!=(--kinematics_data.wheel_data.end()); it_fst++)
     {
+        if(it_fst->second.has_slippage)
+            continue;
+
         auto it_fst_tmp = it_fst;
         for(auto it_sec=(++it_fst_tmp); it_sec!=kinematics_data.wheel_data.end(); it_sec++)
         {
+            if(it_sec->second.has_slippage)
+                continue;
+
             if(fabs(it_sec->second.pos_on_vehicle[1] - it_fst->second.pos_on_vehicle[1]) > 0.001)
             {
                 ang_vel += (it_fst->second.direction[0] - it_sec->second.direction[0])
@@ -56,6 +101,9 @@ bool VehicleKinematics::forwardKinematics(KinematicsData &kinematics_data)
     // }
     for(auto it=kinematics_data.wheel_data.begin(); it!=kinematics_data.wheel_data.end(); it++)
     {
+        if(it->second.has_slippage)
+            continue;
+
         dir_x += it->second.direction[0] + ang_vel * it->second.pos_on_vehicle[1];
         dir_y += it->second.direction[1] - ang_vel * it->second.pos_on_vehicle[0];
         dir_cnt += 1;
@@ -85,15 +133,5 @@ void VehicleKinematics::angularVelocityToDirection(const double &ang_vel, const 
     // and trans fist item to negative, when ang_vel is negative, formula is the same.
     direction[0] = -1 * ang_vel * pos_on_vehicle[1];
     direction[1] = ang_vel * pos_on_vehicle[0];
-}
-
-double VehicleKinematics::metersToRads(const double &meters)
-{
-    return meters / WHEEL_RADIUS;
-}
-
-double VehicleKinematics::radsTometers(const double &rads)
-{
-    return rads * WHEEL_RADIUS;
 }
 }

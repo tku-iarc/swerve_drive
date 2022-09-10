@@ -85,6 +85,7 @@ void VehicleController::initKinematicsData(std::vector<std::string>& wheels_name
     {
         WheelData wheel_data;
         wheel_data.wheel_name = *it;
+        wheel_data.has_slippage = false;
         wheel_data.direction[0] = 0;
         wheel_data.direction[1] = 0;
         wheel_data.direction_cmd[0] = 0;

@@ -12,8 +12,7 @@ public:
     bool forwardKinematics(KinematicsData &kinematics_data);
     bool inverseKinematics(KinematicsData &kinematics_data);
 private:
+    bool checkSlippage(KinematicsData &kinematics_data);
     void angularVelocityToDirection(const double &ang_vel, const Double2 &position, Double2 &direction);
-    double metersToRads(const double &meters);
-    double radsTometers(const double &rads);
 };
 } // namespace vehicle_controller
