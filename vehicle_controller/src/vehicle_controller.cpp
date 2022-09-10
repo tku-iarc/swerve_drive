@@ -60,9 +60,10 @@ VehicleController::VehicleController(std::string& node_name)
         }
     }
     initKinematicsData(wheels_name_);
+    last_odomap_update_time_secs_ = 0;
     kinematics = VehicleKinematics();
     odom_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-    timer_ = this->create_wall_timer(40ms, std::bind(&VehicleController::mainLoopCallback, this));
+    timer_ = this->create_wall_timer(40ms, std::bind(&VehicleController::vehicleStatePublish, this));
 }
 
 VehicleController::~VehicleController()
@@ -132,6 +133,9 @@ void VehicleController::jointStatesCallback(const sensor_msgs::msg::JointState::
         kinematics_data_.wheel_data[name].direction[0] = wheel_dir->dir_x;
         kinematics_data_.wheel_data[name].direction[1] = wheel_dir->dir_y;
     }
+    double curr_time_secs = rclcpp::Time(state->header.stamp.sec, state->header.stamp.nanosec).seconds();
+    vehicleOdometer(curr_time_secs - last_odomap_update_time_secs_);
+    last_odomap_update_time_secs_ = curr_time_secs;
 }
 
 void VehicleController::vehicleCmdCallback(const geometry_msgs::msg::Twist::SharedPtr cmd)
@@ -233,11 +237,10 @@ void VehicleController::ensureCmdLimit()
     }
 }
 
-void VehicleController::vehicleOdometer(rclcpp::Rate& /*loop_rate*/)
+void VehicleController::vehicleOdometer(double cycle_time)
 {
     if(kinematics.forwardKinematics(kinematics_data_))
     {    
-        double cycle_time = 0.04; //loop_rate.expectedCycleTime().toSec();
         kinematics_data_.rotation += kinematics_data_.angular_velocity * cycle_time;
         kinematics_data_.rotation += (kinematics_data_.rotation > M_PI) ? -2 * M_PI : (kinematics_data_.rotation < -1 * M_PI) ? 2 * M_PI : 0;
         kinematics_data_.position[0] += (cos(kinematics_data_.rotation) * kinematics_data_.direction[0] * cycle_time
@@ -306,12 +309,5 @@ void VehicleController::sendCmd()
     }
     swerve_cmd_pub_->publish(swerves_cmd);
     wheel_cmd_pub_->publish(wheels_cmd);
-}
-
-void VehicleController::mainLoopCallback()
-{
-    rclcpp::Rate loop_rate(10);
-    this->vehicleOdometer(loop_rate);
-    this->vehicleStatePublish();
 }
 }

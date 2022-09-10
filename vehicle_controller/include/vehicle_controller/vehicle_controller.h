@@ -29,7 +29,6 @@ class VehicleController : public rclcpp::Node
 public:
     VehicleController(std::string& node_name);
     ~VehicleController();
-    void mainLoopCallback();
 
     template <typename ParameterT>
     auto auto_declare(const std::string & name, const ParameterT & default_value)
@@ -49,16 +48,17 @@ private:
     // void wheelStateCallback(const mobile_base_msgs::msg::WheelDirection::SharedPtr state);
     void initKinematicsData(std::vector<std::string>& wheels_name);
     void ensureCmdLimit();
-    void vehicleOdometer(rclcpp::Rate& loop_rate);
+    void vehicleOdometer(double cycle_time);
     void vehicleStatePublish();
     void sendCmd();
 
+    std::string prefix_;
     bool sim_;
     bool en_joy_;
     int wheel_numbers;
     double dir_acc_max_;
     double ang_acc_max_;
-    std::string prefix_;
+    double last_odomap_update_time_secs_;
 
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
     rclcpp::Publisher<mobile_base_msgs::msg::VehicleState>::SharedPtr state_pub_;
