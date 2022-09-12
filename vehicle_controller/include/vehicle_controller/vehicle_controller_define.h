@@ -27,7 +27,7 @@ public:
     double    rotation;
     double    angular_velocity_cmd;
     double    angular_velocity;
-    std::vector<WheelData> wheel_data_vector;
-    std::map<std::string, WheelData> wheel_data;
+    std::vector<WheelData*> wheel_data_vector;
+    std::map<std::string, WheelData*> wheel_data;
 } KinematicsData;
 }

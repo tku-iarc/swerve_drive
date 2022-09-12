@@ -74,7 +74,7 @@ private:
     std::map<std::string, wheel_controller::WheelController*> wheel_controllers_;
     std::map<std::string, mobile_base_msgs::msg::WheelDirection::SharedPtr> wheels_direction_cmd_;
     KinematicsData kinematics_data_;
-    VehicleKinematics kinematics;
+    VehicleKinematics kinematics_;
     rclcpp::TimerBase::SharedPtr timer_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> odom_broadcaster_;
 };

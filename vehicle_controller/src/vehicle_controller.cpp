@@ -61,7 +61,7 @@ VehicleController::VehicleController(std::string& node_name)
     }
     initKinematicsData(wheels_name_);
     last_odomap_update_time_secs_ = 0;
-    kinematics = VehicleKinematics();
+    kinematics_ = VehicleKinematics(kinematics_data_);
     odom_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     timer_ = this->create_wall_timer(40ms, std::bind(&VehicleController::vehicleStatePublish, this));
 }
@@ -82,23 +82,30 @@ void VehicleController::initKinematicsData(std::vector<std::string>& wheels_name
     kinematics_data_.angular_velocity = 0;
     kinematics_data_.angular_velocity_cmd = 0;
     kinematics_data_.rotation = 0;
+    WheelData* wheel_data;
     for(auto it = wheels_name.begin(); it != wheels_name.end(); ++it)
     {
-        WheelData wheel_data;
-        wheel_data.wheel_name = *it;
-        wheel_data.has_slippage = false;
-        wheel_data.direction[0] = 0;
-        wheel_data.direction[1] = 0;
-        wheel_data.direction_cmd[0] = 0;
-        wheel_data.direction_cmd[1] = 0;
-        wheel_data.pos_on_vehicle[0] = this->get_parameter("wheel_data." + *it + ".pos_on_vehicle").as_double_array()[0];
-        wheel_data.pos_on_vehicle[1] = this->get_parameter("wheel_data." + *it + ".pos_on_vehicle").as_double_array()[1];
+        wheel_data = new WheelData();
+        wheel_data->wheel_name = *it;
+        wheel_data->has_slippage = false;
+        wheel_data->direction[0] = 0;
+        wheel_data->direction[1] = 0;
+        wheel_data->direction_cmd[0] = 0;
+        wheel_data->direction_cmd[1] = 0;
+        wheel_data->pos_on_vehicle[0] = this->get_parameter("wheel_data." + *it + ".pos_on_vehicle").as_double_array()[0];
+        wheel_data->pos_on_vehicle[1] = this->get_parameter("wheel_data." + *it + ".pos_on_vehicle").as_double_array()[1];
         auto joints_name = this->get_parameter("wheel_data." + *it + ".joints").as_string_array();
         for(auto jn=joints_name.begin(); jn!=joints_name.end(); ++jn)
-            wheel_data.joints_name.push_back(prefix_ + *jn);
+            wheel_data->joints_name.push_back(prefix_ + *jn);
         kinematics_data_.wheel_data_vector.push_back(wheel_data);
-        kinematics_data_.wheel_data.insert(std::pair<std::string, WheelData>(*it, wheel_data));
+        kinematics_data_.wheel_data.insert(std::pair<std::string, WheelData*>(*it, wheel_data));
     }
+    for(auto it = kinematics_data_.wheel_data_vector.begin(); it != kinematics_data_.wheel_data_vector.end(); it++)
+        std::cout<<&**it<<", "<<(*it)->wheel_name<<std::endl;
+    std::cout<<"-------------------"<<std::endl;
+    for(auto it = kinematics_data_.wheel_data.begin(); it != kinematics_data_.wheel_data.end(); it++)
+        std::cout<<&*it->second<<", "<<it->second->wheel_name<<std::endl;
+    
 }
 
 bool VehicleController::calibrationCallback(const std::shared_ptr<mobile_base_msgs::srv::Calibration::Request> req, 
@@ -126,12 +133,12 @@ void VehicleController::jointStatesCallback(const sensor_msgs::msg::JointState::
         std::vector<std::vector<double>> wheel_state;
         auto wheel_dir = std::make_shared<mobile_base_msgs::msg::WheelDirection>();
 
-        for(std::string jn : kinematics_data_.wheel_data[name].joints_name)
+        for(std::string jn : kinematics_data_.wheel_data[name]->joints_name)
             wheel_state.push_back(joint_states_[jn]);
         
         controller->updateJointData(wheel_state, wheel_dir);
-        kinematics_data_.wheel_data[name].direction[0] = wheel_dir->dir_x;
-        kinematics_data_.wheel_data[name].direction[1] = wheel_dir->dir_y;
+        kinematics_data_.wheel_data[name]->direction[0] = wheel_dir->dir_x;
+        kinematics_data_.wheel_data[name]->direction[1] = wheel_dir->dir_y;
     }
     double curr_time_secs = rclcpp::Time(state->header.stamp.sec, state->header.stamp.nanosec).seconds();
     vehicleOdometer(curr_time_secs - last_odomap_update_time_secs_);
@@ -146,15 +153,15 @@ void VehicleController::vehicleCmdCallback(const geometry_msgs::msg::Twist::Shar
     kinematics_data_.direction_cmd[1] = cmd->linear.y;
     kinematics_data_.angular_velocity_cmd = cmd->angular.z;
     this->ensureCmdLimit();
-    if(kinematics.inverseKinematics(kinematics_data_))
+    if(kinematics_.inverseKinematics(kinematics_data_))
     {
         // for(auto it=kinematics_data_.wheel_data_vector.begin(); it!=kinematics_data_.wheel_data_vector.end(); it++)
         for(auto it=wheels_name_.begin(); it!=wheels_name_.end(); ++it)
         {
             auto wheel_dir = std::make_shared<mobile_base_msgs::msg::WheelDirection>();
             wheel_dir->wheel_name = *it;
-            wheel_dir->dir_x = kinematics_data_.wheel_data[*it].direction_cmd[0];
-            wheel_dir->dir_y = kinematics_data_.wheel_data[*it].direction_cmd[1];
+            wheel_dir->dir_x = kinematics_data_.wheel_data[*it]->direction_cmd[0];
+            wheel_dir->dir_y = kinematics_data_.wheel_data[*it]->direction_cmd[1];
             wheels_direction_cmd_[*it] = wheel_dir;
             // wheels_pub_[it->first]->publish(wheel_dir);
         }
@@ -186,13 +193,13 @@ void VehicleController::joysticMsgCallback(const sensor_msgs::msg::Joy::SharedPt
         this->ensureCmdLimit();
     }
     
-    kinematics.inverseKinematics(kinematics_data_);
+    kinematics_.inverseKinematics(kinematics_data_);
     for(auto it=wheels_name_.begin(); it!=wheels_name_.end(); ++it)
     {
         auto wheel_dir = std::make_shared<mobile_base_msgs::msg::WheelDirection>();
         wheel_dir->wheel_name = *it;
-        wheel_dir->dir_x = kinematics_data_.wheel_data[*it].direction_cmd[0];
-        wheel_dir->dir_y = kinematics_data_.wheel_data[*it].direction_cmd[1];
+        wheel_dir->dir_x = kinematics_data_.wheel_data[*it]->direction_cmd[0];
+        wheel_dir->dir_y = kinematics_data_.wheel_data[*it]->direction_cmd[1];
         wheels_direction_cmd_[*it] = wheel_dir;
     }
     sendCmd();
@@ -239,7 +246,7 @@ void VehicleController::ensureCmdLimit()
 
 void VehicleController::vehicleOdometer(double cycle_time)
 {
-    if(kinematics.forwardKinematics(kinematics_data_))
+    if(kinematics_.forwardKinematics(kinematics_data_))
     {    
         kinematics_data_.rotation += kinematics_data_.angular_velocity * cycle_time;
         kinematics_data_.rotation += (kinematics_data_.rotation > M_PI) ? -2 * M_PI : (kinematics_data_.rotation < -1 * M_PI) ? 2 * M_PI : 0;
