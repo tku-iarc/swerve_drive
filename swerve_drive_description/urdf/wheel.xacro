@@ -135,6 +135,33 @@
             damping="0.4"
             friction="0.04" /> -->
     </joint>
+    <link
+        name="${prefix}${side}wheel_arrow_link">
+        <visual>
+            <origin
+                xyz="0 0 0.05"
+                rpy="0 0 0" />
+            <geometry>
+                <box size="0.02 0.02 0.1" />
+            </geometry>
+            <material
+                name="">
+                <color
+                rgba="0.75294 0.75294 0.75294 1" />
+            </material>
+        </visual>
+    </link>
+    <joint
+        name="${prefix}${side}wheel_arrow_joint"
+        type="fixed">
+        <origin
+            xyz="0 -0.04 0"
+            rpy="0 0 0" />
+        <parent
+            link="${prefix}${side}wheel_link" />
+        <child
+            link="${prefix}${side}wheel_arrow_link" />
+    </joint>
     <xacro:wheel_gazebo side="${side}" prefix="${prefix}"/>
   </xacro:macro>
 </robot>
