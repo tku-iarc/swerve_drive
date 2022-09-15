@@ -2,54 +2,53 @@
 
 #include <cstdio>
 #include <iostream>
+#include <vector>
 #include <string>
 #include <cmath>
-#include <ros/ros.h>
-#include <ros/package.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/Float64MultiArray.h>
-#include <sensor_msgs/JointState.h>
-#include <controller_manager/controller_manager.h>
-#include <wheel_controller/WheelDirection.h>
-#include "wheel_controller/hardware_interface.h"
+// #include <ros/ros.h>
+// #include <ros/package.h>
+// #include <std_msgs/msg/Float64.hpp>
+// #include <std_msgs/msg/Float64MultiArray.hpp>
+// #include <sensor_msgs/msg/JointState.hpp>
+// #include <controller_manager/controller_manager.h>
+// #include "wheel_controller/hardware_interface.h"
+#include "mobile_base_msgs/msg/wheel_direction.hpp"
 #include "wheel_controller/joint_data.h"
 
 
-#define DOF 2
-#define WHEEL_DIAMETER 0.15
-#define WHEEL_RADIUS 0.075
+#define WHEEL_RADIUS 0.12
 
-enum WheelState {Idle, Busy, Error, Disable};
-
-class WheelController
+namespace wheel_controller
+{
+class WheelController : public std::enable_shared_from_this<WheelController>
 {
 private:
-    void jointDataInit(int swerve_id, int wheel_id, double swerve_gear_ratio, double wheel_gear_ratio);
+    void jointDataInit(std::vector<int> motors_id);
     /* data */
-    WheelState wheel_state;
-    hardware_interface::SwerveDriveInterface* swerve_drive_interface;
-    controller_manager::ControllerManager* wheel_cm;
-    double metersToRads(const double &meters);
-    double radsTometers(const double &rads);
-    ros::NodeHandle& nodeHandle_;
+    // hardware_interface::SwerveDriveInterface* swerve_drive_interface;
+    // controller_manager::ControllerManager* wheel_cm;
+    double metersToRads(const double& meters, const double& radius);
+    double radsTometers(const double& rads, const double& radius);
 
-    ros::Subscriber wheel_cmd_sub_;
-    ros::Subscriber joint_state_sub_;
-    ros::Publisher  wheel_state_pub_;
-    ros::Publisher  swerve_joint_pub_;
-    ros::Publisher  wheel_joint_pub_;
-    std::string wheel_name_;
-    bool wheel_reverse_;
+    // ros::Subscriber wheel_cmd_sub_;
+    // ros::Subscriber joint_state_sub_;
+    // ros::Publisher  wheel_state_pub_;
+    // ros::Publisher  swerve_joint_pub_;
+    // ros::Publisher  wheel_joint_pub_;
+    // std::string wheel_name_;
     bool sim_;
 
 public:
-    WheelController(ros::NodeHandle& nodeHandle);
+    WheelController(bool sim, std::vector<int> motors_id);
     ~WheelController();
-    void jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
-    void wheelCmdCallback(const wheel_controller::WheelDirection::ConstPtr& msg);
-    void statePublish();
-    void process(ros::Rate& loop_rate);
+    void updateJointData(const std::vector<std::vector<double>>& joint_state, const double& wheel_radius,
+                         mobile_base_msgs::msg::WheelDirection::SharedPtr wheel_state);
+    void getWheelCmd(const mobile_base_msgs::msg::WheelDirection::SharedPtr msg, 
+                     const double& wheel_radius, std::vector<double>& cmds);
+    // void process(ros::Rate& loop_rate);
     std::vector<JointData*> joint_data;
-    float sample_rate;
-    std::string control_mode;
+    // float sample_rate;
+    // std::string control_mode;
+    std::shared_ptr<WheelController> SharedPtr(){return shared_from_this();};
 };
+}

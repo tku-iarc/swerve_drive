@@ -1,52 +1,94 @@
-joint_state_controller:
-  type: joint_state_controller/JointStateController
-  publish_rate: 50
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
 
-# swerve_drive_controller:
-lf_wheel:
-  swerve_controller:
-    type: position_controllers/JointPositionController
-    joint: lf_swerve_joint
-    pid: {p: 5.0, i: 0.01, d: 0.1}
-  wheel_controller:
-    type: velocity_controllers/JointVelocityController
-    joint: lf_wheel_joint
-    pid: {p: 5.0, i: 0.01, d: 0.1}
-rf_wheel:
-  swerve_controller:
-    type: position_controllers/JointPositionController
-    joint: rf_swerve_joint
-    pid: {p: 5.0, i: 0.01, d: 0.1}
-  wheel_controller:
-    type: velocity_controllers/JointVelocityController
-    joint: rf_wheel_joint
-    pid: {p: 5.0, i: 0.01, d: 0.1}
-rr_wheel:
-  swerve_controller:
-    type: position_controllers/JointPositionController
-    joint: rr_swerve_joint
-    pid: {p: 5.0, i: 0.01, d: 0.1}
-  wheel_controller:
-    type: velocity_controllers/JointVelocityController
-    joint: rr_wheel_joint
-    pid: {p: 5.0, i: 0.01, d: 0.1}
-lr_wheel:
-  swerve_controller:
-    type: position_controllers/JointPositionController
-    joint: lr_swerve_joint
-    pid: {p: 5.0, i: 0.01, d: 0.1}
-  wheel_controller:
-    type: velocity_controllers/JointVelocityController
-    joint: lr_wheel_joint
-    pid: {p: 5.0, i: 0.01, d: 0.1}  
+    swerve_controller:
+      type: position_controllers/JointGroupPositionController
 
-gazebo_ros_control:
-  pid_gains:
-    lf_swerve_joint: {p: 1.0, i: 0.0, d: 0.05}
-    rf_swerve_joint: {p: 1.0, i: 0.0, d: 0.05}
-    rr_swerve_joint: {p: 1.0, i: 0.0, d: 0.05}
-    lr_swerve_joint: {p: 1.0, i: 0.0, d: 0.05}
-    lf_wheel_joint: {p: 1.0, i: 0.0, d: 0.0}
-    rf_wheel_joint: {p: 1.0, i: 0.0, d: 0.0}
-    rr_wheel_joint: {p: 1.0, i: 0.0, d: 0.0}
-    lr_wheel_joint: {p: 1.0, i: 0.0, d: 0.0}
+    wheel_controller:
+      type: velocity_controllers/JointGroupVelocityController
+
+swerve_controller:
+  ros__parameters:
+    joints:
+      - lf_swerve_joint
+      - rf_swerve_joint
+      - rr_swerve_joint
+      - lr_swerve_joint
+    interface_name: position
+
+wheel_controller:
+  ros__parameters:
+    joints:
+      - lf_wheel_joint
+      - rf_wheel_joint
+      - rr_wheel_joint
+      - lr_wheel_joint
+    interface_name: velocity
+    open_loop_control: false
+#     has_acceleration_limits: true
+#     max_acceleration: 0
+#     has_velocity_limits: true
+#     max_velocity: 0
+#     joint_limits:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+
+# joint_limits:
+#   ros__parameters:
+#     lf_swerve_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     lf_wheel_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     rf_swerve_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     rf_wheel_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     rr_swerve_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     rr_wheel_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     lr_swerve_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+#     lr_wheel_joint:
+#       has_acceleration_limits: true
+#       max_acceleration: 0
+#       has_velocity_limits: true
+#       max_velocity: 0
+
+# gazebo_ros2_control:
+#   ros__parameters:
+#     pid_gains:
+#       rf_swerve_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       rr_swerve_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       lr_swerve_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       lf_swerve_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       lf_wheel_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       rf_wheel_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       rr_wheel_joint: {p: 0.0, i: 0.0, d: 0.05}
+#       lr_wheel_joint: {p: 0.0, i: 0.0, d: 0.05}

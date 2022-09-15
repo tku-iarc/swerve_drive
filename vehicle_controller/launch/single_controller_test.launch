@@ -1,6 +1,5 @@
 <launch>
     <arg name="sim"           default="false"/>
-    <arg name="wheel_reverse" default="false"/>
     <arg name="dir_acc_max"   default="1"/>
     <arg name="ang_acc_max"   default="1"/>
     <arg name="id_list"       default="[7, 8]"/>
@@ -19,6 +18,7 @@
             <arg name="wheel_name"    value="lf_wheel"/>
             <arg name="swerve_id"     value="3"/>
             <arg name="wheel_id"      value="4"/>
+            <arg name="wheel_reverse" value="true" unless="$(arg sim)"/>
         </include>
     </group>
     <group ns="rf_wheel">
@@ -27,7 +27,6 @@
             <arg name="wheel_name"   value="rf_wheel"/>
             <arg name="swerve_id"    value="1"/>
             <arg name="wheel_id"     value="2"/>
-            <arg name="wheel_reverse" value="true" unless="$(arg sim)"/>
         </include>
     </group> -->
     <group ns="rr_wheel">
@@ -36,7 +35,6 @@
             <arg name="wheel_name"   value="rr_wheel"/>
             <arg name="swerve_id"    value="7"/>
             <arg name="wheel_id"     value="8"/>
-            <arg name="wheel_reverse" value="true" unless="$(arg sim)"/>
         </include>
     </group>
     <!-- <group ns="lr_wheel">
@@ -45,6 +43,7 @@
             <arg name="wheel_name"   value="lr_wheel"/>
             <arg name="swerve_id"    value="5"/>
             <arg name="wheel_id"     value="6"/>
+            <arg name="wheel_reverse" value="true" unless="$(arg sim)"/>
         </include>
     </group> -->
 

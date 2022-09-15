@@ -22,5 +22,5 @@ public:
     double velocity_cmd_;
     double effort_;
     double home_offset_;
-    double gear_ratio_;
+    // double gear_ratio_;
 } JointData;

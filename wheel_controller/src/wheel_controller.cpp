@@ -1,47 +1,51 @@
 #include <cmath>
+#include <cfloat>
 #include "wheel_controller/wheel_controller.h"
 
-WheelController::WheelController(ros::NodeHandle& nodeHandle)
-    :nodeHandle_(nodeHandle)
+namespace wheel_controller
 {
-    ros::NodeHandle nh_private("~");
-    wheel_name_ = nh_private.param<std::string>("wheel_name", "wheel");
-    sample_rate = nh_private.param<int>("sample_rate", 12);
-    control_mode = nh_private.param<std::string>("control_mode", "velocity");
-    int swerve_id = nh_private.param<int>("swerve_id", 1);
-    int wheel_id = nh_private.param<int>("wheel_id", 2);
-    double swerve_gear_ratio = nh_private.param<double>("swerve_gear_ratio", 0.2193);
-    double wheel_gear_ratio = nh_private.param<double>("wheel_gear_ratio", 1.03158);
+WheelController::WheelController(bool sim, std::vector<int> motors_id)
+{
+    // ros::NodeHandle nh_private("~");
+    // wheel_name_ = nh_private.param<std::string>("wheel_name", "wheel");
+    // sample_rate = nh_private.param<int>("sample_rate", 12);
+    // control_mode = nh_private.param<std::string>("control_mode", "velocity");
+    // int swerve_id = nh_private.param<int>("swerve_id", 1);
+    // int wheel_id = nh_private.param<int>("wheel_id", 2);
+    // double swerve_gear_ratio = nh_private.param<double>("swerve_gear_ratio", 0.2193);
+    // double wheel_gear_ratio = nh_private.param<double>("wheel_gear_ratio", 1.03158);
 
-    wheel_state = Disable;
-    jointDataInit(swerve_id, wheel_id, swerve_gear_ratio, wheel_gear_ratio);
-    wheel_reverse_ = nh_private.param<bool>("wheel_reverse", false);
-    sim_ = nh_private.param<bool>("sim", false);
-    if(!sim_)
-    {
-        swerve_drive_interface = new hardware_interface::SwerveDriveInterface(nodeHandle_, this->joint_data, sample_rate, control_mode);
-        wheel_cm = new controller_manager::ControllerManager(swerve_drive_interface, nodeHandle);
-    }
-    else
-    {
-        joint_state_sub_ = nodeHandle_.subscribe("/joint_states" , 1, &WheelController::jointStateCallback, this);
-    }
-    wheel_cmd_sub_ = nodeHandle_.subscribe("wheel_cmd", 16, &WheelController::wheelCmdCallback, this);
-    wheel_state_pub_ = nodeHandle_.advertise<wheel_controller::WheelDirection>("wheel_state", 1);
-	swerve_joint_pub_ = nodeHandle_.advertise<std_msgs::Float64>("swerve_controller/command", 1);
-    wheel_joint_pub_ = nodeHandle_.advertise<std_msgs::Float64>("wheel_controller/command", 1);
+    jointDataInit(motors_id);
+    sim_ = sim;
+    // sim_ = nh_private.param<bool>("sim", false);
+    // if(!sim_)
+    // {
+    //     swerve_drive_interface = new hardware_interface::SwerveDriveInterface(nodeHandle_, this->joint_data, sample_rate, control_mode);
+    //     wheel_cm = new controller_manager::ControllerManager(swerve_drive_interface, nodeHandle);
+    // }
+    // else
+    // {
+    //     joint_state_sub_ = nodeHandle_.subscribe("/joint_states" , 1, &WheelController::jointStateCallback, this);
+    // }
+    // wheel_cmd_sub_ = nodeHandle_.subscribe("wheel_cmd", 16, &WheelController::wheelCmdCallback, this);
+    // wheel_state_pub_ = nodeHandle_.advertise<mobile_base_msgs::msg::WheelDirection>("wheel_state", 1);
+	// swerve_joint_pub_ = nodeHandle_.advertise<std_msgs::Float64>("swerve_controller/command", 1);
+    // wheel_joint_pub_ = nodeHandle_.advertise<std_msgs::Float64>("wheel_controller/command", 1);
 }
 
 WheelController::~WheelController()
 {
-    delete swerve_drive_interface;
-    delete wheel_cm;
+    // if(!sim_)
+    // {
+    //     delete swerve_drive_interface;
+    //     delete wheel_cm;
+    // }
 }
 
-void WheelController::jointDataInit(int swerve_id, int wheel_id, double swerve_gear_ratio, double wheel_gear_ratio)
+void WheelController::jointDataInit(std::vector<int> motors_id)
 {
     joint_data.push_back(new JointData());
-    joint_data[0]->id_             = swerve_id;
+    joint_data[0]->id_             = motors_id[0];
     joint_data[0]->control_mode_   = 0;
     joint_data[0]->joint_name_     = "swerve_joint";
     joint_data[0]->joint_position_ = 0;
@@ -56,10 +60,10 @@ void WheelController::jointDataInit(int swerve_id, int wheel_id, double swerve_g
     joint_data[0]->velocity_cmd_   = 0;
     joint_data[0]->effort_         = 0;
     joint_data[0]->home_offset_    = 0;
-    joint_data[0]->gear_ratio_     = swerve_gear_ratio;
+    // joint_data[0]->gear_ratio_     = swerve_gear_ratio;
 
     joint_data.push_back(new JointData());
-    joint_data[1]->id_             = wheel_id;
+    joint_data[1]->id_             = motors_id[1];
     joint_data[0]->control_mode_   = 1;
     joint_data[1]->joint_name_     = "wheel_joint";
     joint_data[1]->joint_position_ = 0;
@@ -74,106 +78,109 @@ void WheelController::jointDataInit(int swerve_id, int wheel_id, double swerve_g
     joint_data[1]->velocity_cmd_   = 0;
     joint_data[1]->effort_         = 0;
     joint_data[1]->home_offset_    = 0;
-    joint_data[1]->gear_ratio_     = wheel_gear_ratio;
+    // joint_data[1]->gear_ratio_     = wheel_gear_ratio;
 }
 
-void WheelController::jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg)
+void WheelController::updateJointData(const std::vector<std::vector<double>>& joint_state, const double& wheel_radius,
+                                      mobile_base_msgs::msg::WheelDirection::SharedPtr wheel_state)
 {
-    std::string token_self = wheel_name_.substr(0, wheel_name_.find("_"));
-    for(int i=0; i<msg->name.size(); i++)
+    for(size_t i=0; i<joint_data.size(); i++)
     {
-        if(msg->name[i].find(token_self) != std::string::npos)
-        {
-            if(msg->name[i].find("swerve") != std::string::npos)
-            {
-                joint_data[0]->joint_position_ = msg->position[i];
-                joint_data[0]->joint_angle_ = fmod(msg->position[i], 2 * M_PI);
-                if(joint_data[0]->joint_angle_ > M_PI)
-                    joint_data[0]->joint_angle_ -= 2 * M_PI;
-                else if (joint_data[0]->joint_angle_ < -1 * M_PI)
-                    joint_data[0]->joint_angle_ += 2 * M_PI;
-                joint_data[0]->velocity_ = msg->velocity[i];
-            }
-            else if(msg->name[i].find("wheel") != std::string::npos)
-            {
-                joint_data[1]->joint_position_ = msg->position[i];
-                joint_data[1]->joint_angle_ = fmod(msg->position[i], 2 *M_PI);
-                if(joint_data[1]->joint_angle_ > M_PI)
-                    joint_data[1]->joint_angle_ -= 2 * M_PI;
-                else if (joint_data[1]->joint_angle_ < -1 * M_PI)
-                    joint_data[1]->joint_angle_ += 2 * M_PI;
-                joint_data[1]->velocity_ = msg->velocity[i];
-            }
-        }
+        joint_data[i]->joint_position_ = joint_state[i][0];
+        double joint_angle = fmod(joint_state[i][0], 2 * M_PI);
+        if(joint_angle > M_PI)
+            joint_angle -= 2 * M_PI;
+        else if (joint_angle < -1 * M_PI)
+            joint_angle += 2 * M_PI;
+        joint_data[i]->joint_angle_ = joint_angle;
+        joint_data[i]->velocity_ = joint_state[1][i];
+        joint_data[i]->acceleration_ = joint_state[i][2];
     }
+    wheel_state->dir_x = cos(joint_data[0]->joint_angle_);
+    wheel_state->dir_x *= radsTometers(joint_data[1]->velocity_, wheel_radius);
+    wheel_state->dir_y = sin(joint_data[0]->joint_angle_) * radsTometers(joint_data[1]->velocity_, wheel_radius);
+
+    // std::string token_self = wheel_name_.substr(0, wheel_name_.find("_"));
+    // for(int i=0; i<msg->name.size(); i++)
+    // {
+    //     if(msg->name[i].find(token_self) != std::string::npos)
+    //     {
+    //         if(msg->name[i].find("swerve") != std::string::npos)
+    //         {
+    //             joint_data[0]->joint_position_ = msg->position[i];
+    //             joint_data[0]->joint_angle_ = fmod(msg->position[i], 2 * M_PI);
+    //             if(joint_data[0]->joint_angle_ > M_PI)
+    //                 joint_data[0]->joint_angle_ -= 2 * M_PI;
+    //             else if (joint_data[0]->joint_angle_ < -1 * M_PI)
+    //                 joint_data[0]->joint_angle_ += 2 * M_PI;
+    //             joint_data[0]->velocity_ = msg->velocity[i];
+    //         }
+    //         else if(msg->name[i].find("wheel") != std::string::npos)
+    //         {
+    //             joint_data[1]->joint_position_ = msg->position[i];
+    //             joint_data[1]->joint_angle_ = fmod(msg->position[i], 2 *M_PI);
+    //             if(joint_data[1]->joint_angle_ > M_PI)
+    //                 joint_data[1]->joint_angle_ -= 2 * M_PI;
+    //             else if (joint_data[1]->joint_angle_ < -1 * M_PI)
+    //                 joint_data[1]->joint_angle_ += 2 * M_PI;
+    //             joint_data[1]->velocity_ = msg->velocity[i];
+    //         }
+    //     }
+    // }
 }
 
-void WheelController::wheelCmdCallback(const wheel_controller::WheelDirection::ConstPtr& msg)
+void WheelController::getWheelCmd(const mobile_base_msgs::msg::WheelDirection::SharedPtr msg,
+                                  const double& wheel_radius, std::vector<double>& cmds)
 {
     double swerve_angle = atan2(msg->dir_y, msg->dir_x);
-    double wheel_velocity = metersToRads(sqrt(msg->dir_x*msg->dir_x + msg->dir_y*msg->dir_y));
-    double dis_angle = (fabs(swerve_angle - joint_data[0]->joint_angle_) > M_PI) ? 
-        2 * M_PI - fabs(swerve_angle - joint_data[0]->joint_angle_) : fabs(swerve_angle - joint_data[0]->joint_angle_);
-    double tmp_angle = swerve_angle;
+    double wheel_velocity = metersToRads(sqrt(msg->dir_x*msg->dir_x + msg->dir_y*msg->dir_y), wheel_radius);
+    double dis_angle = fabs(swerve_angle - joint_data[0]->joint_angle_);
+    // double dis_angle = (fabs(swerve_angle - joint_data[0]->joint_angle_) > M_PI) ? 
+    //     2 * M_PI - fabs(swerve_angle - joint_data[0]->joint_angle_) : fabs(swerve_angle - joint_data[0]->joint_angle_);
+    if (dis_angle > M_PI)
+        dis_angle = 2 * M_PI - dis_angle;
     if(dis_angle > M_PI / 2)
     {
         swerve_angle += (swerve_angle > 0) ? -1 * M_PI : M_PI;
         wheel_velocity *= -1;
     }
-    if(sim_)
-    {
-        dis_angle = swerve_angle - joint_data[0]->joint_angle_;
-        if(fabs(dis_angle) > M_PI)
-            dis_angle += (dis_angle > 0) ? -2 * M_PI : 2 * M_PI;
-        swerve_angle = joint_data[0]->joint_position_ + dis_angle;
-    }
-    std_msgs::Float64 cmd;
-    cmd.data = swerve_angle;
-    swerve_joint_pub_.publish(cmd);
-    cmd.data = (wheel_reverse_) ? wheel_velocity * -1 : wheel_velocity;
-    wheel_joint_pub_.publish(cmd);
+    dis_angle = swerve_angle - joint_data[0]->joint_angle_;
+    if(fabs(dis_angle) > M_PI)
+        dis_angle += (dis_angle > 0) ? -2 * M_PI : 2 * M_PI;
+    swerve_angle = joint_data[0]->joint_position_ + dis_angle;
+    cmds[0] = swerve_angle;
+    cmds[1] = wheel_velocity;
 }
 
-double WheelController::metersToRads(const double &meters)
+double WheelController::metersToRads(const double& meters, const double& radius)
 {
-    return meters / WHEEL_RADIUS;
+    return meters / radius;
 }
 
-double WheelController::radsTometers(const double &rads)
+double WheelController::radsTometers(const double& rads, const double& radius)
 {
-    return rads * WHEEL_RADIUS;
+    return rads * radius;
 }
 
-void WheelController::statePublish()
-{
-    wheel_controller::WheelDirection state;
-    state.wheel_name = wheel_name_;
-    state.dir_x = cos(joint_data[0]->joint_angle_); //(joint_data[0]->joint_angle_ >= 0) ? cos(joint_data[0]->joint_angle_) : -1 * cos(joint_data[0]->joint_angle_);
-    state.dir_x *= radsTometers(joint_data[1]->velocity_);
-    state.dir_y = sin(joint_data[0]->joint_angle_) * radsTometers(joint_data[1]->velocity_);
-    wheel_state_pub_.publish(state);
-}
-
-void WheelController::process(ros::Rate& loop_rate)
-{
-    if(sim_)
-        return;
-    ros::Time start_time = ros::Time::now();
-    ros::Duration timeout(1.0); // Timeout of 2 seconds
-    ros::Rate rate(100);
-    while(swerve_drive_interface->read() == false)
-    {
-        ros::spinOnce();
-        if(ros::Time::now() - start_time > timeout)
-        {
-            ROS_ERROR("Wait for state update timeout!!");
-            break;
-        }
-        rate.sleep();
-    }
-    if(wheel_reverse_)
-        joint_data[0]->velocity_ *= -1;
-    wheel_cm->update(ros::Time::now(), loop_rate.expectedCycleTime());
-    swerve_drive_interface->writeVelocity(loop_rate.expectedCycleTime());
-    return;
-}
+// void WheelController::process(ros::Rate& loop_rate)
+// {
+//     if(sim_)
+//         return;
+//     ros::Time start_time = ros::Time::now();
+//     ros::Duration timeout(1.0); // Timeout of 2 seconds
+//     ros::Rate rate(100);
+//     while(swerve_drive_interface->read() == false)
+//     {
+//         ros::spinOnce();
+//         if(ros::Time::now() - start_time > timeout)
+//         {
+//             ROS_ERROR("Wait for state update timeout!!");
+//             break;
+//         }
+//         rate.sleep();
+//     }
+//     wheel_cm->update(ros::Time::now(), loop_rate.expectedCycleTime());
+//     swerve_drive_interface->writeVelocity(loop_rate.expectedCycleTime());
+//     return;
+// }
+} // end of namespace wheel_controller

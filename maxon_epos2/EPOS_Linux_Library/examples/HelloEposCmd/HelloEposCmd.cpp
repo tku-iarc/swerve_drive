@@ -2,7 +2,7 @@
 // Name        : HelloEposCmd.cpp
 // Author      : Dawid Sienkiewicz
 // Version     :
-// Copyright   : maxon motor ag 2014-2019
+// Copyright   : maxon motor ag 2014-2021
 // Description : Hello Epos in C++
 //============================================================================
 
@@ -131,8 +131,8 @@ void PrintSettings()
 void SetDefaultParameters()
 {
 	//USB
-	g_usNodeId = 7;
-	g_deviceName = "EPOS2"; 
+	g_usNodeId = 1;
+	g_deviceName = "EPOS4"; 
 	g_protocolStackName = "MAXON SERIAL V2"; 
 	g_interfaceName = "USB"; 
 	g_portName = "USB0"; 
@@ -456,7 +456,7 @@ int Demo(unsigned int* p_pErrorCode)
 	int lResult = MMC_SUCCESS;
 	unsigned int lErrorCode = 0;
 
-	// lResult = DemoProfileVelocityMode(g_pKeyHandle, g_usNodeId, lErrorCode);
+	lResult = DemoProfileVelocityMode(g_pKeyHandle, g_usNodeId, lErrorCode);
 
 	if(lResult != MMC_SUCCESS)
 	{

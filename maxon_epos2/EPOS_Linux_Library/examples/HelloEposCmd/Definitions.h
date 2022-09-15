@@ -95,10 +95,14 @@
     //Motor
     Configuration_DllExport int  VCS_SetMotorType(void* KeyHandle, unsigned short NodeId, unsigned short MotorType, unsigned int* pErrorCode);
     Configuration_DllExport int  VCS_SetDcMotorParameter(void* KeyHandle, unsigned short NodeId, unsigned short NominalCurrent, unsigned short MaxOutputCurrent, unsigned short ThermalTimeConstant, unsigned int* pErrorCode);
+    Configuration_DllExport int  VCS_SetDcMotorParameterEx(void* KeyHandle, unsigned short NodeId, unsigned int NominalCurrent, unsigned int MaxOutputCurrent, unsigned short ThermalTimeConstant, unsigned int* pErrorCode);
     Configuration_DllExport int  VCS_SetEcMotorParameter(void* KeyHandle, unsigned short NodeId, unsigned short NominalCurrent, unsigned short MaxOutputCurrent, unsigned short ThermalTimeConstant, unsigned char NbOfPolePairs, unsigned int* pErrorCode);
+    Configuration_DllExport int  VCS_SetEcMotorParameterEx(void* KeyHandle, unsigned short NodeId, unsigned int NominalCurrent, unsigned int MaxOutputCurrent, unsigned short ThermalTimeConstant, unsigned char NbOfPolePairs, unsigned int* pErrorCode);
     Configuration_DllExport int  VCS_GetMotorType(void* KeyHandle, unsigned short NodeId, unsigned short* pMotorType, unsigned int* pErrorCode);
     Configuration_DllExport int  VCS_GetDcMotorParameter(void* KeyHandle, unsigned short NodeId, unsigned short* pNominalCurrent, unsigned short* pMaxOutputCurrent, unsigned short* pThermalTimeConstant, unsigned int* pErrorCode);
+    Configuration_DllExport int  VCS_GetDcMotorParameterEx(void* KeyHandle, unsigned short NodeId, unsigned int* pNominalCurrent, unsigned int* pMaxOutputCurrent, unsigned short* pThermalTimeConstant, unsigned int* pErrorCode);
     Configuration_DllExport int  VCS_GetEcMotorParameter(void* KeyHandle, unsigned short NodeId, unsigned short* pNominalCurrent, unsigned short* pMaxOutputCurrent, unsigned short* pThermalTimeConstant, unsigned char* pNbOfPolePairs, unsigned int* pErrorCode);
+    Configuration_DllExport int  VCS_GetEcMotorParameterEx(void* KeyHandle, unsigned short NodeId, unsigned int* pNominalCurrent, unsigned int* pMaxOutputCurrent, unsigned short* pThermalTimeConstant, unsigned char* pNbOfPolePairs, unsigned int* pErrorCode);
 
     //Sensor
     Configuration_DllExport int  VCS_SetSensorType(void* KeyHandle, unsigned short NodeId, unsigned short SensorType, unsigned int* pErrorCode);
@@ -179,7 +183,9 @@
     MotionInfo_DllExport int  VCS_GetVelocityIs(void* KeyHandle, unsigned short NodeId, int* pVelocityIs, unsigned int* pErrorCode);
     MotionInfo_DllExport int  VCS_GetVelocityIsAveraged(void* KeyHandle, unsigned short NodeId, int* pVelocityIsAveraged, unsigned int* pErrorCode);
     MotionInfo_DllExport int  VCS_GetCurrentIs(void* KeyHandle, unsigned short NodeId, short* pCurrentIs, unsigned int* pErrorCode);
+    MotionInfo_DllExport int  VCS_GetCurrentIsEx(void* KeyHandle, unsigned short NodeId, int* pCurrentIs, unsigned int* pErrorCode);
     MotionInfo_DllExport int  VCS_GetCurrentIsAveraged(void* KeyHandle, unsigned short NodeId, short* pCurrentIsAveraged, unsigned int* pErrorCode);
+    MotionInfo_DllExport int  VCS_GetCurrentIsAveragedEx(void* KeyHandle, unsigned short NodeId, int* pCurrentIsAveraged, unsigned int* pErrorCode);
     MotionInfo_DllExport int  VCS_WaitForTargetReached(void* KeyHandle, unsigned short NodeId, unsigned int Timeout, unsigned int* pErrorCode);
 
 //Profile Position Mode
@@ -252,7 +258,9 @@
 //Current Mode
     CurrentMode_DllExport int  VCS_ActivateCurrentMode(void* KeyHandle, unsigned short NodeId, unsigned int* pErrorCode);
     CurrentMode_DllExport int  VCS_SetCurrentMust(void* KeyHandle, unsigned short NodeId, short CurrentMust, unsigned int* pErrorCode);
+    CurrentMode_DllExport int  VCS_SetCurrentMustEx(void* KeyHandle, unsigned short NodeId, int CurrentMust, unsigned int* pErrorCode);
     CurrentMode_DllExport int  VCS_GetCurrentMust(void* KeyHandle, unsigned short NodeId, short* pCurrentMust, unsigned int* pErrorCode);
+    CurrentMode_DllExport int  VCS_GetCurrentMustEx(void* KeyHandle, unsigned short NodeId, int* pCurrentMust, unsigned int* pErrorCode);
 
     //Advanced Functions
     CurrentMode_DllExport int  VCS_ActivateAnalogCurrentSetpoint(void* KeyHandle, unsigned short NodeId, unsigned short AnalogInputNumber, float Scaling, short Offset, unsigned int* pErrorCode);
@@ -280,7 +288,7 @@
     InputsOutputs_DllExport int  VCS_GetAnalogInputState(void* KeyHandle, unsigned short NodeId, unsigned short Configuration, long* pStateValue, unsigned int* pErrorCode);
     InputsOutputs_DllExport int  VCS_SetAnalogOutput(void* KeyHandle, unsigned short NodeId, unsigned short OutputNumber, unsigned short AnalogValue, unsigned int* pErrorCode);
     InputsOutputs_DllExport int  VCS_SetAnalogOutputVoltage(void* KeyHandle, unsigned short NodeId, unsigned short OutputNumber, long VoltageValue, unsigned int* pErrorCode);
-    InputsOutputs_DllExport int VCS_SetAnalogOutputState(void* KeyHandle, unsigned short NodeId, unsigned short Configuration, long StateValue, unsigned int* pErrorCode);
+    InputsOutputs_DllExport int  VCS_SetAnalogOutputState(void* KeyHandle, unsigned short NodeId, unsigned short Configuration, long StateValue, unsigned int* pErrorCode);
 
     //Position Compare
     InputsOutputs_DllExport int  VCS_SetPositionCompareParameter(void* KeyHandle, unsigned short NodeId, unsigned char OperationalMode, unsigned char IntervalMode, unsigned char DirectionDependency, unsigned short IntervalWidth, unsigned short IntervalRepetitions, unsigned short PulseWidth, unsigned int* pErrorCode);
