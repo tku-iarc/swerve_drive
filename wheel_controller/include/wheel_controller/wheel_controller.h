@@ -16,10 +16,6 @@
 #include "wheel_controller/joint_data.h"
 
 
-#define DOF 2
-// #define WHEEL_DIAMETER 0.15
-// #define WHEEL_RADIUS 0.075
-#define WHEEL_DIAMETER 0.24
 #define WHEEL_RADIUS 0.12
 
 namespace wheel_controller
@@ -31,8 +27,8 @@ private:
     /* data */
     // hardware_interface::SwerveDriveInterface* swerve_drive_interface;
     // controller_manager::ControllerManager* wheel_cm;
-    double metersToRads(const double &meters);
-    double radsTometers(const double &rads);
+    double metersToRads(const double& meters, const double& radius);
+    double radsTometers(const double& rads, const double& radius);
 
     // ros::Subscriber wheel_cmd_sub_;
     // ros::Subscriber joint_state_sub_;
@@ -45,9 +41,10 @@ private:
 public:
     WheelController(bool sim, std::vector<int> motors_id);
     ~WheelController();
-    void updateJointData(const std::vector<std::vector<double>>& joint_state,
+    void updateJointData(const std::vector<std::vector<double>>& joint_state, const double& wheel_radius,
                          mobile_base_msgs::msg::WheelDirection::SharedPtr wheel_state);
-    void getWheelCmd(const mobile_base_msgs::msg::WheelDirection::SharedPtr msg, std::vector<double>& cmds);
+    void getWheelCmd(const mobile_base_msgs::msg::WheelDirection::SharedPtr msg, 
+                     const double& wheel_radius, std::vector<double>& cmds);
     // void process(ros::Rate& loop_rate);
     std::vector<JointData*> joint_data;
     // float sample_rate;

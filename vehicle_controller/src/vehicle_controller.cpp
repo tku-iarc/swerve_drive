@@ -17,10 +17,10 @@ VehicleController::VehicleController(std::string& node_name)
     auto_declare<std::string>("prefix", std::string());
     auto_declare<std::vector<std::string>>("wheel_data.wheels_name", std::vector<std::string>());
 
-    this->get_parameter_or("sim", sim_, false);
-    this->get_parameter_or("dir_acc_max", dir_acc_max_, 1.0);
-    this->get_parameter_or("ang_acc_max", ang_acc_max_, 1.0);
-    this->get_parameter_or("prefix", prefix_, std::string());
+    sim_ = this->get_parameter("sim").as_bool();
+    prefix_ = this->get_parameter("prefix").as_string();
+    dir_acc_max_ = this->get_parameter("dir_acc_max").as_double();
+    ang_acc_max_ = this->get_parameter("ang_acc_max").as_double();
 
     wheels_name_ = this->get_parameter("wheel_data.wheels_name").as_string_array();
     for(auto it=wheels_name_.begin(); it!=wheels_name_.end(); ++it)
@@ -28,6 +28,7 @@ VehicleController::VehicleController(std::string& node_name)
         auto_declare<std::vector<int>>("wheel_data." + *it + ".motors_id", std::vector<int>());
         auto_declare<std::vector<std::string>>("wheel_data." + *it + ".joints", std::vector<std::string>());
         auto_declare<std::vector<double>>("wheel_data." + *it + ".pos_on_vehicle", std::vector<double>());
+        auto_declare<double>("wheel_data." + *it + ".wheel_radius", NAN);
     }
 
 
@@ -94,18 +95,13 @@ void VehicleController::initKinematicsData(std::vector<std::string>& wheels_name
         wheel_data->direction_cmd[1] = 0;
         wheel_data->pos_on_vehicle[0] = this->get_parameter("wheel_data." + *it + ".pos_on_vehicle").as_double_array()[0];
         wheel_data->pos_on_vehicle[1] = this->get_parameter("wheel_data." + *it + ".pos_on_vehicle").as_double_array()[1];
+        wheel_data->radius = this->get_parameter("wheel_data." + *it + ".wheel_radius").as_double();
         auto joints_name = this->get_parameter("wheel_data." + *it + ".joints").as_string_array();
         for(auto jn=joints_name.begin(); jn!=joints_name.end(); ++jn)
             wheel_data->joints_name.push_back(prefix_ + *jn);
         kinematics_data_.wheel_data_vector.push_back(wheel_data);
         kinematics_data_.wheel_data.insert(std::pair<std::string, WheelData*>(*it, wheel_data));
     }
-    for(auto it = kinematics_data_.wheel_data_vector.begin(); it != kinematics_data_.wheel_data_vector.end(); it++)
-        std::cout<<&**it<<", "<<(*it)->wheel_name<<std::endl;
-    std::cout<<"-------------------"<<std::endl;
-    for(auto it = kinematics_data_.wheel_data.begin(); it != kinematics_data_.wheel_data.end(); it++)
-        std::cout<<&*it->second<<", "<<it->second->wheel_name<<std::endl;
-    
 }
 
 bool VehicleController::calibrationCallback(const std::shared_ptr<mobile_base_msgs::srv::Calibration::Request> req, 
@@ -136,7 +132,8 @@ void VehicleController::jointStatesCallback(const sensor_msgs::msg::JointState::
         for(std::string jn : kinematics_data_.wheel_data[name]->joints_name)
             wheel_state.push_back(joint_states_[jn]);
         
-        controller->updateJointData(wheel_state, wheel_dir);
+        double wheel_radius = kinematics_data_.wheel_data[name]->radius;
+        controller->updateJointData(wheel_state, wheel_radius, wheel_dir);
         kinematics_data_.wheel_data[name]->direction[0] = wheel_dir->dir_x;
         kinematics_data_.wheel_data[name]->direction[1] = wheel_dir->dir_y;
     }
@@ -310,7 +307,8 @@ void VehicleController::sendCmd()
     {
         std::vector<double> cmds;
         cmds.resize(2, std::numeric_limits<double>::quiet_NaN());
-        wheel_controllers_[name]->getWheelCmd(wheels_direction_cmd_[name], cmds);
+        double wheel_radius = kinematics_data_.wheel_data[name]->radius;
+        wheel_controllers_[name]->getWheelCmd(wheels_direction_cmd_[name], wheel_radius, cmds);
         swerves_cmd.data.push_back(cmds[0]);
         wheels_cmd.data.push_back(cmds[1]);
     }

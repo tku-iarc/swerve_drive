@@ -15,6 +15,7 @@ public:
     Double2     direction;
     Double2     direction_cmd;
     Double2     pos_on_vehicle;
+    double      radius;
     bool        has_slippage;
 } WheelData;
 

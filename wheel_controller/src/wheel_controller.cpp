@@ -81,7 +81,7 @@ void WheelController::jointDataInit(std::vector<int> motors_id)
     // joint_data[1]->gear_ratio_     = wheel_gear_ratio;
 }
 
-void WheelController::updateJointData(const std::vector<std::vector<double>>& joint_state, 
+void WheelController::updateJointData(const std::vector<std::vector<double>>& joint_state, const double& wheel_radius,
                                       mobile_base_msgs::msg::WheelDirection::SharedPtr wheel_state)
 {
     for(size_t i=0; i<joint_data.size(); i++)
@@ -97,8 +97,8 @@ void WheelController::updateJointData(const std::vector<std::vector<double>>& jo
         joint_data[i]->acceleration_ = joint_state[i][2];
     }
     wheel_state->dir_x = cos(joint_data[0]->joint_angle_);
-    wheel_state->dir_x *= radsTometers(joint_data[1]->velocity_);
-    wheel_state->dir_y = sin(joint_data[0]->joint_angle_) * radsTometers(joint_data[1]->velocity_);
+    wheel_state->dir_x *= radsTometers(joint_data[1]->velocity_, wheel_radius);
+    wheel_state->dir_y = sin(joint_data[0]->joint_angle_) * radsTometers(joint_data[1]->velocity_, wheel_radius);
 
     // std::string token_self = wheel_name_.substr(0, wheel_name_.find("_"));
     // for(int i=0; i<msg->name.size(); i++)
@@ -129,10 +129,11 @@ void WheelController::updateJointData(const std::vector<std::vector<double>>& jo
     // }
 }
 
-void WheelController::getWheelCmd(const mobile_base_msgs::msg::WheelDirection::SharedPtr msg, std::vector<double>& cmds)
+void WheelController::getWheelCmd(const mobile_base_msgs::msg::WheelDirection::SharedPtr msg,
+                                  const double& wheel_radius, std::vector<double>& cmds)
 {
     double swerve_angle = atan2(msg->dir_y, msg->dir_x);
-    double wheel_velocity = metersToRads(sqrt(msg->dir_x*msg->dir_x + msg->dir_y*msg->dir_y));
+    double wheel_velocity = metersToRads(sqrt(msg->dir_x*msg->dir_x + msg->dir_y*msg->dir_y), wheel_radius);
     double dis_angle = fabs(swerve_angle - joint_data[0]->joint_angle_);
     // double dis_angle = (fabs(swerve_angle - joint_data[0]->joint_angle_) > M_PI) ? 
     //     2 * M_PI - fabs(swerve_angle - joint_data[0]->joint_angle_) : fabs(swerve_angle - joint_data[0]->joint_angle_);
@@ -154,14 +155,14 @@ void WheelController::getWheelCmd(const mobile_base_msgs::msg::WheelDirection::S
     cmds[1] = wheel_velocity;
 }
 
-double WheelController::metersToRads(const double &meters)
+double WheelController::metersToRads(const double& meters, const double& radius)
 {
-    return meters / WHEEL_RADIUS;
+    return meters / radius;
 }
 
-double WheelController::radsTometers(const double &rads)
+double WheelController::radsTometers(const double& rads, const double& radius)
 {
-    return rads * WHEEL_RADIUS;
+    return rads * radius;
 }
 
 // void WheelController::process(ros::Rate& loop_rate)
