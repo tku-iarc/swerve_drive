@@ -2,6 +2,7 @@
 #include "swerve_drive_hardware/maxon_ros_interface.h"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include <cmath>
 
 namespace swerve_drive_hardware
 {

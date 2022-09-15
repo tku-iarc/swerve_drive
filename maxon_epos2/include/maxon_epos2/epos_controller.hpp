@@ -26,6 +26,9 @@
 #include "mobile_base_msgs/msg/motor_state.hpp"
 #include "mobile_base_msgs/msg/motor_states.hpp"
 
+#define MAX_POS 32602
+#define SAFE_POS 25000
+
 
 namespace maxon_epos2 {
 
@@ -56,6 +59,7 @@ class EposController : public rclcpp::Node
   bool writePosition(int id);
   bool writeVelocity(int id, double& cmd);
   bool writeVelocity(int id);
+  bool homeResetCheck(int id);
   void setMotorCmd(int id, double& cmd);
   void motorStatesPublisher();
   void closeDevice();
@@ -63,6 +67,10 @@ class EposController : public rclcpp::Node
   double getPos(unsigned short id){return pos[id];}
   double getVel(unsigned short id){return vel[id];}
   double getCur(unsigned short id){return cur[id];}
+  void setCmd(unsigned short id, double val){cmd[id] = val;}
+  void setPos(unsigned short id, double val){pos[id] = val;}
+  void setVel(unsigned short id, double val){vel[id] = val;}
+  void setCur(unsigned short id, double val){cur[id] = val;}
 
  private:
   /*!

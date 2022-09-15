@@ -144,13 +144,10 @@ void WheelController::getWheelCmd(const mobile_base_msgs::msg::WheelDirection::S
         swerve_angle += (swerve_angle > 0) ? -1 * M_PI : M_PI;
         wheel_velocity *= -1;
     }
-    if(sim_)
-    {
-        dis_angle = swerve_angle - joint_data[0]->joint_angle_;
-        if(fabs(dis_angle) > M_PI)
-            dis_angle += (dis_angle > 0) ? -2 * M_PI : 2 * M_PI;
-        swerve_angle = joint_data[0]->joint_position_ + dis_angle;
-    }
+    dis_angle = swerve_angle - joint_data[0]->joint_angle_;
+    if(fabs(dis_angle) > M_PI)
+        dis_angle += (dis_angle > 0) ? -2 * M_PI : 2 * M_PI;
+    swerve_angle = joint_data[0]->joint_position_ + dis_angle;
     cmds[0] = swerve_angle;
     cmds[1] = wheel_velocity;
 }

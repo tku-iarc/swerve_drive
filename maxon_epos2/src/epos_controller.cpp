@@ -169,8 +169,11 @@ bool EposController::writePosition(int id, double& cmd, double offset)
 
 bool EposController::writePosition(int id)
 {
-	if(fabs(cmd[id] - pos[id]) > (M_PI / swerve_gear_ratio))
-		epos_device_.resetHomePoseition(id);
+	if(fabs(cmd[id] - pos[id]) > (2 * M_PI / swerve_gear_ratio))
+	{
+		RCLCPP_WARN(this->get_logger(), "Ignore position command cause too big");
+		return true;
+	}
 	if(epos_device_.setPositionMust(id, cmd[id])==MMC_FAILED)
 	{
 		RCLCPP_ERROR(this->get_logger(), "Seting position failed");
@@ -181,7 +184,6 @@ bool EposController::writePosition(int id)
 
 bool EposController::writeProfilePosition(int id, double& cmd, double& vel, double offset)
 {
-
 	if(epos_device_.setPositionProfile(id, vel, 4 * vel, 4 * vel)==MMC_FAILED)
 	{
 		RCLCPP_ERROR(this->get_logger(), "Seting position profile failed, vel = %f", vel);
@@ -193,6 +195,16 @@ bool EposController::writeProfilePosition(int id, double& cmd, double& vel, doub
 		return false;
 	}
 	return true;
+}
+
+bool EposController::homeResetCheck(int id)
+{
+	if(fabs(pos[id]) > SAFE_POS && fabs(vel[id]) < 0.0001)
+	{
+		epos_device_.resetHomePoseition(id);
+		return true;
+	}
+	return false;
 }
 
 void EposController::setMotorCmd(int id, double& cmd)
@@ -238,14 +250,18 @@ void EposController::mainLoopCallback()
 	{
 		this->readPosition(*it);
 		this->readVelocity(*it);
+		if(this->homeResetCheck(*it))
+		{
+			this->readPosition(*it);
+			this->readVelocity(*it);
+		}
 	}
 	for(size_t i=0; i<vel_list_.size(); i++)
 	{
 		double cmd = this->getCmd(vel_list_[i]) - (this->getVel(pos_list_[i]) * 0.1566416);
 		this->writeVelocity(vel_list_[i], cmd);
+		this->setVel(vel_list_[i], cmd);  // this is because velocity given by hall sensor is not credible
 	}
-	for(auto it = vel_list_.begin(); it != vel_list_.end(); ++it)
-		this->readVelocity(*it);
 	this->motorStatesPublisher();
 }
 
