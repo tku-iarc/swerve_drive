@@ -3,7 +3,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include "vehicle_controller/vehicle_controller.h"
-#define JOY_SPEED 0.5  //0~1
+#define JOY_SPEED 0.3  //0~1
 using namespace std::chrono_literals;
 
 namespace vehicle_controller
