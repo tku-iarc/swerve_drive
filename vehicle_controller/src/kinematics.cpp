@@ -68,13 +68,14 @@ bool VehicleKinematics::checkSlippage(KinematicsData &kinematics_data)
 
 bool VehicleKinematics::forwardKinematics(KinematicsData &kinematics_data)
 {
+    if(!checkSlippage(kinematics_data))
+    {
+        return false;
+    }
+
     // double ang_vel = 0; double dir_x = 0; double dir_y = 0;
     // double ang_vel_cnt = 0; double dir_cnt = 0;
 
-    // if(!checkSlippage(kinematics_data))
-    // {
-    //     return false;
-    // }
     
     // for(auto it_fst=kinematics_data.wheel_data.begin(); it_fst!=(--kinematics_data.wheel_data.end()); it_fst++)
     // {
